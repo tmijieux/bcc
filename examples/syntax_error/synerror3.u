@@ -1,0 +1,9 @@
+void putint(int i);
+
+
+void main()
+{
+	int i;
+	for (i = 0, i < 7; ++i)
+		putint(i);
+}

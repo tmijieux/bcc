@@ -1,0 +1,5 @@
+ce programme ne compile pas
+
+---
+
+les paramètres de l'opérateur map n'ont pas les bons types

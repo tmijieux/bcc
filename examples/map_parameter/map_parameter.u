@@ -1,0 +1,18 @@
+
+int bar( int x );
+
+int main()
+{
+    int a[];
+    int b[100];
+    int c;
+    
+    a = map(foo, b);
+
+    a = map(bar, c);
+
+    a = map(bar, d);
+
+    a = map (b, b);
+    return 0;
+}

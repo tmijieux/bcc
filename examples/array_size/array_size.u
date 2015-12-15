@@ -1,0 +1,8 @@
+void putint(int i);
+
+void main()
+{
+	int tab[10];
+
+	putint((int)size(tab));
+}

@@ -1,0 +1,6 @@
+ce programme ne compile pas
+
+----
+
+
+on ne peut pas sommer deux tableaux de la sorte

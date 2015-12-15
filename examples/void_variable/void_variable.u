@@ -1,0 +1,9 @@
+void foobar(void a);
+
+int main()
+{
+    void d;
+
+    d = foobar( 3 );
+    return 0;
+}

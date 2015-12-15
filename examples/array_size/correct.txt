@@ -1,0 +1,14 @@
+ce programme compile sans encombre
+
+---
+
+ce programme fonctionne
+
+---
+
+les choix sur les cast ne sont pas encore bien choisi
+le comportement de cet example pourra etre legerement
+différent a l'avenir
+
+la syntaxe pour l'opérateur size est elle aussi trés probablement amené
+à changée

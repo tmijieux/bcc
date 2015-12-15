@@ -1,0 +1,3 @@
+declaration_reference.u.2: 11:7: error: undefined reference to d
+declaration_reference.u.2: 14:7: error: symbol multiple definition: c 
+declaration_reference.u.2: 23:1: fatal error: multiple definition for function b

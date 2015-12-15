@@ -1,0 +1,7 @@
+warnings.u.2: 4:1: warning: Block with no instructions
+warnings.u.2: 7:1: warning: Empty block is useless
+warnings.u.2: 10:11: warning: return statement makes an implicit cast
+warnings.u.2: 16:8: warning: assignment makes an implicit cast
+warnings.u.2: 17:7: warning: assignment makes an implicit cast
+warnings.u.2: 18:10: warning: return statement makes an implicit cast
+

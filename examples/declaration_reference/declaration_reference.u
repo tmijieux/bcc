@@ -1,0 +1,31 @@
+
+int a();
+
+int b()
+{
+    return a();
+
+}
+
+int c;
+
+int a()
+{
+    int c;
+    b();
+    d = c + 3;
+    {
+	int c;
+	int c;
+
+	c = 8;
+    }
+    return 7;
+}
+
+int b()
+{
+    a();
+    return 0;
+}
+

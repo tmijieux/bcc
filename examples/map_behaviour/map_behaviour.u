@@ -1,0 +1,35 @@
+int putint(int i);
+void putchar(int i);
+
+int glob;
+
+int counter(int i)
+{
+	return glob++;
+}
+
+int main()
+{
+	int a[10], i;
+	glob = 0;
+	
+	a = map(counter, a); 
+	
+	for (i = 0; i < 10; ++i)
+		putint(a[i]);
+
+	/*
+	  with  map_linear extension:
+	  0
+	  1
+	  ...
+	  8
+	  9
+
+	  with map_thread extension:
+
+	  --> undefined order
+	  
+	 */
+	return 0;
+}

@@ -1,0 +1,4 @@
+map_parameter.u.2: 7:16: error: undefined reference to foo
+map_parameter.u.2: 8:19: error: second operand to map operator must be an array.
+map_parameter.u.2: 9:19: error: undefined reference to d
+map_parameter.u.2: 10:18: error: first operand to map operator must be a function.

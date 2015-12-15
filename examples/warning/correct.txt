@@ -1,0 +1,6 @@
+ce programme compile
+
+---
+
+ce programme peut eventuellement déclenché des warning 
+car certaines décisions du programmeurs peuvent paraître douteuse

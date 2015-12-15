@@ -1,0 +1,7 @@
+ce programme compile sans encombre
+
+---
+
+ce programme fonctionnera normalement
+sans comportement indéfini si l'on fait le choix
+de vérifier que l'on ne dépasse pas les bornes à l'execution

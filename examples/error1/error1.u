@@ -1,0 +1,14 @@
+int foo(int foo);
+
+int main()
+{
+    int bar[1000];
+    int bol[];
+       
+    ++ bol;
+
+
+    $lol;
+
+    return 0;
+}

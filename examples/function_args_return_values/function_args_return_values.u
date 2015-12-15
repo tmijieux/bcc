@@ -1,0 +1,21 @@
+
+//int foo(int z, int k[], float e);
+
+int foo(int c);
+float bar(float a, int z[], int k);
+    
+int main()
+{
+    int a, b, d, g, tab[];
+    int blob[][];
+    
+    foo(3.4, a, 2);
+
+    a = foo(d);
+    tab = foo(d);
+
+
+    g = bar(foo, blob, 3);
+
+    return 0;
+}

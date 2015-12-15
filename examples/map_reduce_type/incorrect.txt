@@ -1,0 +1,6 @@
+ce programme ne compile pas
+
+---
+
+les types des fonctions et des tableaux des opérateurs
+map et reduce ne correspondent pas

@@ -1,0 +1,5 @@
+ce programme ne compile pas
+
+---
+
+prendre l'opposé d'un tableau n'est pas possible

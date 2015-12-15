@@ -1,0 +1,5 @@
+ce programme ne compile pas
+
+---
+
+on ne peut pas incrémenter un tableau

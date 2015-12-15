@@ -1,0 +1,1 @@
+array_sum.u.2: 5:14: error: addition impossible: have array<0 x int> and array<0 x int>

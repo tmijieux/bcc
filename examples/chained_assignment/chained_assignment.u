@@ -1,0 +1,17 @@
+void putint(int u);
+
+int main()
+{
+	int a, b, c;
+
+	a = -3;
+	c = 7;
+	a = b = c;
+	putint(a); // --> 7
+	
+	b = a = 3;
+	putint(a); //--> 3
+	putint(b); //--> 3
+
+	return 0;
+}

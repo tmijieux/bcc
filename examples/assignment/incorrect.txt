@@ -1,0 +1,5 @@
+ce programme ne compile pas
+
+---
+
+deux erreurs de sémantique au niveaux des affectations

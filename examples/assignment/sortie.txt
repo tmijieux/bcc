@@ -1,0 +1,2 @@
+assignment.u.2: 6:10: error: assignment: type mismatch
+assignment.u.2: 7:10: error: assignment: invalid left value

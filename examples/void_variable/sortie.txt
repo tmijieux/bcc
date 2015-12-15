@@ -1,0 +1,2 @@
+void_variable.u.2: 1:19: error: void is not a valid type.
+void_variable.u.2: 4:11: error: void is not a valid type for a variable.

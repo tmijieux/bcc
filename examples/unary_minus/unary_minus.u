@@ -1,0 +1,22 @@
+
+
+int foo(int x, int y);
+int bar(int x);
+
+
+int negative(int x)
+{
+    return -x;
+}
+
+int main()
+{
+    int foobar[];
+
+    - map(bar, foobar); // NOT OK
+    map(negative, foobar); //  OK
+    - reduce(foo, map(bar, foobar)); // OK
+    return 0;
+}
+
+

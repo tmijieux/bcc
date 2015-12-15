@@ -1,0 +1,7 @@
+function_args_return_values.u.2: 7:18: error: foo: illegal number of arguments.
+function_args_return_values.u.2: 9:17: error: assignment: type mismatch
+function_args_return_values.u.2: 10:25: error: bar(): argument 1 has invalid type.
+expected float but function (int) --> int was given.
+function_args_return_values.u.2: 10:25: error: bar(): argument 2 has invalid type.
+expected array<0 x int> but array<0 x array<0 x int>> was given.
+function_args_return_values.u.2: 10:26: warning: assignment makes an implicit cast

@@ -1,0 +1,17 @@
+
+int z (float z, int k);
+
+int zz[][];
+
+int main(int x)
+{
+    int b, a;
+    z;
+
+    b = zz(4, 9);
+    if (a == b)
+    {
+
+    }
+}
+

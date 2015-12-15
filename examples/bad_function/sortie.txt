@@ -1,0 +1,1 @@
+bad_function.u: 11:16: fatal error: 'zz' is not a function.

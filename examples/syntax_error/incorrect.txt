@@ -1,0 +1,17 @@
+tous ces programmes ne compile pas et déclenche des erreurs de syntaxe
+a l'exception du premier qui fait planter le compilateur en lui
+meme mais le problème est intercepté avant le compilateur
+si ont fait manger les commentaires par cpp ( le préprocesseur du c)
+avant de le passer a notre compilateur
+
+(intégré dans le script `compile`)
+
+
+
+cependant comme le programme cpp mange les commentaires
+et que notre compilateur ne gere pas les indications de lignes
+laissés par cpp, il faut desactiver ces indications de lignes
+et notre compilateur se trompe parfois sur ses propres indications
+de lignes pour les erreurs
+
+

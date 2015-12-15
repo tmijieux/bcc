@@ -1,0 +1,6 @@
+ce programme ne compile pas
+
+---
+
+
+zz n'est pas une fonction mais un tableau global

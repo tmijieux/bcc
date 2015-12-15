@@ -1,0 +1,6 @@
+ce programme ne compile pas
+
+---
+
+void ne peut désigner seulement le type de retour pour les procédures 
+qui  ne renvoit rien

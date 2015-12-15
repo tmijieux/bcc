@@ -1,0 +1,9 @@
+ce programme compile
+
+---
+
+ce programme peut servir a mettre en évidence que plusieurs comportement 
+sont possible pour la sortie
+si l'on a compilé libu avec la variable MAP=thread
+
+(map utilisant pthread)

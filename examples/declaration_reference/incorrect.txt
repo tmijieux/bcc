@@ -1,0 +1,9 @@
+ce programme ne compile pas
+
+---
+
+certains symboles sont définis deux fois,
+et un symbole n'est jamais définit,
+
+si on s'interesse aux lignes des erreurs on peut voir
+quel déclarations en particuliers sont problématiques

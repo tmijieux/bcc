@@ -1,0 +1,7 @@
+ce programme ne compile pas
+
+---
+
+certains appels de fonctions ne correspondent pas avec
+les déclarations prototypes
+

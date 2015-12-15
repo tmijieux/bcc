@@ -1,0 +1,28 @@
+
+
+void foo()
+{
+    int foo;
+    /* no instructions */
+}
+
+void foo2()
+{
+    /* empty block */
+}
+
+int foo3()
+{
+	return 3.;
+}
+
+float main()
+{
+	int x;
+	float y;
+	x = 7.;
+
+	y = 4;
+
+	return x;
+}

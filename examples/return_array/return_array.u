@@ -1,0 +1,26 @@
+void putint(int i);
+
+int creer_tableau[]()
+{
+	int tableau[100];
+	
+	return tableau;
+}
+
+int add(int x, int y)
+{
+	return x + y;
+}
+
+void main()
+{
+	int s, i, tableau[100];
+
+	tableau = creer_tableau();
+	for (i = 0; i < 100; ++i)
+		tableau[i] = i;
+
+	s = reduce(add, tableau);
+	putint(s);
+}
+

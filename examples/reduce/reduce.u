@@ -1,0 +1,34 @@
+void putint(int i);
+
+int square(int x)
+{
+	return x*x;
+}
+
+int add(int x, int y)
+{
+	return x+y;
+}
+
+int main()
+{
+	int i, x, A[1000];
+  
+	for (i=0; i<1000; i++)
+	{
+		A[i]=i;
+	}
+	x = reduce(add, map(square, A));
+	
+	putint(x);
+	/*
+	  python:
+	  l=range(0, 1000)
+	  x = sum(map(lambda x: x**2, l))
+	  print x
+	  --> 332833500
+	*/
+	
+	return 0;
+}
+

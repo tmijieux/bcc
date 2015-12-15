@@ -1,0 +1,36 @@
+
+int putint(int i);
+void putchar(int i);
+
+int tableau[](int n)
+{
+	int tab[ n ];
+
+	return tab;
+}
+
+
+int glob;
+
+int lol(int x)
+{
+	x = 3 * glob++;
+	putint(x);
+	return 0;
+}
+
+void main()
+{
+
+	int i, x[], y[];
+	glob=0;
+
+	x = tableau(10);
+
+	/* for (i = 0; i < 10; ++i) */
+	/* 	putint(i); */
+
+	y = map(lol, x);
+
+	putint(y[3]);
+}

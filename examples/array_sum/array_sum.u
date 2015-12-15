@@ -1,0 +1,11 @@
+
+int main()
+{
+    int a[], b[];
+    float  d;
+    
+    if (a + b)
+	d = 7.;
+
+    return 0;
+}

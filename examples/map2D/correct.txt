@@ -1,0 +1,6 @@
+ce programme compile
+
+---
+
+ce programme fonctionne
+

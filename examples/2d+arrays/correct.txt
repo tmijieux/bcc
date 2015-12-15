@@ -1,0 +1,6 @@
+ce programme compile sans encombre
+
+---
+
+ce programme fonctionne
+et termine normalement

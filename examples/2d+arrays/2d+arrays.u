@@ -1,0 +1,52 @@
+
+void putint(int c);
+int putchar(int a);
+
+int main()
+{
+	int k;
+	int a[4][3];
+	int i, j;
+	
+	for (i = 0; i < 4; ++i)
+	{
+		for (j = 0; j < 3; ++j)
+		{
+			a[i][j] = i + j+1;
+			k = k / 3;
+		}
+	}
+	
+	for (j = 0; j < 3; ++j)
+	{
+		for (i = 0; i < 4; ++i)
+		{
+			putint(a[i][j]);
+		}
+		putchar(10);
+	}
+	
+	
+	putchar(45);	
+	putchar(45);	
+	putchar(45);	
+	putchar(45);	
+	putchar(45);	
+	putchar(45);	
+	putchar(45);	
+	putchar(45);	
+	putchar(10);
+	putchar(10);	
+
+	for (i = 0; i < 4; ++i)
+	{
+		for (j = 0; j < 3; ++j)
+		{
+			putint(a[i][j]);
+		}
+		putchar(10);
+	}
+	
+	return 0;
+}
+

@@ -1,0 +1,22 @@
+
+int foo(int x);
+int foo2(float x);
+
+int bar(int z, int z);
+    
+int main(int x, int y)
+{
+    float f, a[];
+    
+    reduce(bar, map(foo, a));
+    // map error
+    // --> no cascade error for containing expression
+
+    a = map(foo2, a); // return array --> assignment error
+
+    f = reduce(bar, a); // return int --> assignment make implicit cast
+    // reduce error: a must be an array of `int`
+
+    return 0;
+}
+

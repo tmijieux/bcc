@@ -1,0 +1,12 @@
+int main()
+{
+    int a;
+    int b[];
+    a = 7;
+
+    b = a;
+
+    7 = 3;
+
+    return 0;
+}

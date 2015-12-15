@@ -1,0 +1,2 @@
+error1.u.2: 6:11: error: cannot decrement on type array<0 x int>
+error1.u.2: 7:9: error: undefined reference to $lol
