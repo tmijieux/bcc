@@ -8,14 +8,14 @@
 #include "error.h"
 #include "expression.h"
 
-#define DEFINE_TYPE(ty)				\
-    const struct type* type_##ty;		\
-    const struct type* type_##ty##_v;		\
+#define DEFINE_TYPE(ty)                         \
+    const struct type* type_##ty;               \
+    const struct type* type_##ty##_v;           \
 
-#define INIT_TYPE(ty, TY)				\
-    type_##ty = type_new(TYPE_##TY);			\
-    type_##ty##_v = type_new(TYPE_##TY);		\
-    ((struct type*)type_##ty##_v)->is_vector = true;	\
+#define INIT_TYPE(ty, TY)                               \
+    type_##ty = type_new(TYPE_##TY);                    \
+    type_##ty##_v = type_new(TYPE_##TY);                \
+    ((struct type*)type_##ty##_v)->is_vector = true;    \
 
 static struct type *type_new(enum enum_type t);
 
@@ -128,24 +128,24 @@ static struct type *type_new(enum enum_type et)
 */
 const struct type *
 type_new_array_type_reversed(const struct type *values,
-			     const struct expression *array_size)
+                             const struct expression *array_size)
 {
     struct type *ty = type_new(TYPE_ARRAY);
 
     if (!type_is_array(values)) {
-	ty->array_type.values = values;
-	ty->array_type.array_size = array_size;
-	return ty;
+        ty->array_type.values = values;
+        ty->array_type.array_size = array_size;
+        return ty;
     }
 
     ty->array_type.array_size = type_array_size(values);
     ty->array_type.values = type_new_array_type(type_array_values(values),
-						array_size);
+                                                array_size);
     return ty;
 }
 
 const struct type *type_new_array_type(const struct type *values,
-				       const struct expression *array_size)
+                                       const struct expression *array_size)
 {
     struct type *ty = type_new(TYPE_ARRAY);
 
@@ -154,7 +154,7 @@ const struct type *type_new_array_type(const struct type *values,
     return ty;
 }
 
-const struct type *	// list of symbols (should be type)
+const struct type *     // list of symbols (should be type)
 type_new_function_type(const struct type *return_value, struct list *argv)
 {
     struct type *ty = type_new(TYPE_FUNCTION);
@@ -170,19 +170,19 @@ static const char *str_expression_size(const struct expression *expr)
 {
     char *str = "";
     if (expr->expression_type == EXPR_CONSTANT) {
-	if (expr->type == type_int) {
-	    asprintf(&str, "%d x ", expr->constanti);
-	}
+        if (expr->type == type_int) {
+            asprintf(&str, "%d x ", expr->constanti);
+        }
 
-	if (expr->type == type_long) {
-	    asprintf(&str, "%ld x ", expr->constantl);
-	}
+        if (expr->type == type_long) {
+            asprintf(&str, "%ld x ", expr->constantl);
+        }
     }
     if (expr->expression_type == EXPR_SYMBOL) {
-	asprintf(&str, "%s x ", expr->symbol->name);
+        asprintf(&str, "%s x ", expr->symbol->name);
     }
     if (expr->expression_type == EXPR_UNDEF) {
-	return "undef";
+        return "undef";
     }
 
     return str;
@@ -194,46 +194,46 @@ const char *type_printable(const struct type *t)
 
     switch (t->type) {
     case TYPE_UNDEF:
-	printable = "undef";
-	break;
+        printable = "undef";
+        break;
     case TYPE_GENERIC:
-	printable = "generic";
-	break;
+        printable = "generic";
+        break;
 
     case TYPE_VOID:
-	printable = "void";
-	break;
+        printable = "void";
+        break;
 
     case TYPE_BOOL:
-	printable = "bool";
-	break;
+        printable = "bool";
+        break;
 
     case TYPE_INT:
-	printable = "int";
-	break;
+        printable = "int";
+        break;
 
     case TYPE_FLOAT:
-	printable = "float";
-	break;
+        printable = "float";
+        break;
     case TYPE_LONG:
-	printable = "long";
-	break;
+        printable = "long";
+        break;
 
     case TYPE_ARRAY:
-	asprintf(&printable, "array<%s%s>",
-		 str_expression_size(t->array_type.array_size),
-		 type_printable(t->array_type.values));
-	break;
+        asprintf(&printable, "array<%s%s>",
+                 str_expression_size(t->array_type.array_size),
+                 type_printable(t->array_type.values));
+        break;
 
     case TYPE_FUNCTION:
-	asprintf(&printable, "function (%s) --> %s",
-		 type_arglist(t->function_type.argv),
-		 type_printable(t->function_type.return_value));
-	break;
+        asprintf(&printable, "function (%s) --> %s",
+                 type_arglist(t->function_type.argv),
+                 type_printable(t->function_type.return_value));
+        break;
 
     default:
-	printable = "";
-	break;
+        printable = "";
+        break;
     }
 
     return printable;
@@ -244,9 +244,9 @@ static const char *type_arglist(struct list *l)
     char *arglist = "";
     int s = list_size(l);
     for (int i = 1; i <= s; ++i) {
-	struct symbol *v = list_get(l, i);
-	asprintf(&arglist, "%s%s%s",
-		 arglist, i == 1 ? "" : ", ", type_printable(v->type));
+        struct symbol *v = list_get(l, i);
+        asprintf(&arglist, "%s%s%s",
+                 arglist, i == 1 ? "" : ", ", type_printable(v->type));
     }
     return arglist;
 }
@@ -254,34 +254,34 @@ static const char *type_arglist(struct list *l)
 bool type_equal(const struct type *t1, const struct type *t2)
 {
     if (t1 == t2)
-	return true;
+        return true;
     
     if (t1->type != t2->type) {
-	if (t1 == type_generic || t2 == type_generic)
-	    return true;
-	return false;
+        if (t1 == type_generic || t2 == type_generic)
+            return true;
+        return false;
     }
 
     if (t1->type == TYPE_FUNCTION) {
-	if (!type_equal(t1->function_type.return_value,
-			t2->function_type.return_value))
-	    return false;
-	struct list *l1 = t1->function_type.argv;
-	struct list *l2 = t2->function_type.argv;
-	unsigned int s;
-	if ((s = list_size(l1)) != list_size(l2))
-	    return false;
-	for (unsigned int i = 1; i <= s; ++i) {
-	    const struct type *s1 = ((struct symbol*)list_get(l1,i))->type;
-	    const struct type *s2 = ((struct symbol*)list_get(l2,i))->type;
-	    if (!type_equal(s1, s2))
-		return false;
-	}
+        if (!type_equal(t1->function_type.return_value,
+                        t2->function_type.return_value))
+            return false;
+        struct list *l1 = t1->function_type.argv;
+        struct list *l2 = t2->function_type.argv;
+        unsigned int s;
+        if ((s = list_size(l1)) != list_size(l2))
+            return false;
+        for (unsigned int i = 1; i <= s; ++i) {
+            const struct type *s1 = ((struct symbol*)list_get(l1,i))->type;
+            const struct type *s2 = ((struct symbol*)list_get(l2,i))->type;
+            if (!type_equal(s1, s2))
+                return false;
+        }
     }
 
     if (t1->type == TYPE_ARRAY) {
-	if (!type_equal(t1->array_type.values, t2->array_type.values))
-	    return false;
+        if (!type_equal(t1->array_type.values, t2->array_type.values))
+            return false;
     }
 
     return true;
@@ -290,14 +290,14 @@ bool type_equal(const struct type *t1, const struct type *t2)
 bool type_is_basic(const struct type * type)
 {
     return (type == type_byte || type == type_short ||
-	    type == type_int || type == type_long || type == type_bool ||
-	    type == type_float || type == type_generic);
+            type == type_int || type == type_long || type == type_bool ||
+            type == type_float || type == type_generic);
 }
 
 bool type_is_integer(const struct type * type)
 {
     return (type == type_bool || type == type_byte || type == type_short ||
-	    type == type_int || type == type_long);
+            type == type_int || type == type_long);
 }
 
 bool type_is_function(const struct type * ty)

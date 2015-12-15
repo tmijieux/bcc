@@ -8,6 +8,7 @@ SRC=	grammar.c \
 	scanner.c \
 	error.c \
 	main.c \
+	option.c \
 	module.c \
 	function.c \
 	program.c \

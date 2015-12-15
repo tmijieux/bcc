@@ -51,9 +51,9 @@ module_get_or_create_function(struct module *m, struct symbol *sym)
 {
     struct function *fun;
     if (ht_get_entry(m->funtable, sym->name, &fun) != 0) {
-	fun = fun_new(sym);
-	ht_add_entry(m->funtable, sym->name, fun);
-	list_append(m->funlist, fun);
+        fun = fun_new(sym);
+        ht_add_entry(m->funtable, sym->name, fun);
+        list_append(m->funlist, fun);
     }
     return fun;
 }
@@ -69,25 +69,25 @@ void module_print(struct module *m, FILE * out)
 
     si = list_size(m->protolist);
     for (int i = 1; i <= si; ++i) {
-	struct prototype *pt = list_get(m->protolist, i);
-	struct function *f;
-	ht_get_entry(m->funtable, pt->name, &f);
-	if (!f->body_set)
-	    fputs(pt->code, out);
+        struct prototype *pt = list_get(m->protolist, i);
+        struct function *f;
+        ht_get_entry(m->funtable, pt->name, &f);
+        if (!f->body_set)
+            fputs(pt->code, out);
     }
     
     fputs("\n", out);
     si = list_size(m->globlist);
     for (int i = 1; i <= si; ++i)
-	fputs(list_get(m->globlist, i), out);
+        fputs(list_get(m->globlist, i), out);
 
     fputs("\n", out);
 
     si = list_size(m->funlist);
     for (int i = 1; i <= si; ++i) {
-	struct function *fun = list_get(m->funlist, i);
-	fun_cg(fun);
-	fputs(fun->code, out);
+        struct function *fun = list_get(m->funlist, i);
+        fun_cg(fun);
+        fputs(fun->code, out);
     }
 }
 
@@ -97,8 +97,8 @@ void module_add_prototype(struct module *m, struct symbol *sym)
     struct prototype *pt = calloc(sizeof*pt, 1);
     pt->name = sym->name;
     asprintf(&pt->code, "declare %s @%s(%s)\n",
-	     type_cg(type_function_return(sym->type)), sym->name,
-	     type_cg_arglist_nameless(type_function_argv(sym->type)));
+             type_cg(type_function_return(sym->type)), sym->name,
+             type_cg_arglist_nameless(type_function_argv(sym->type)));
     list_append(m->protolist, pt);
 }
 
@@ -113,7 +113,7 @@ void module_add_global(struct module *m, struct symbol *sym)
 
     char *code;
     asprintf(&code, "%s = global %s 0\n",
-	     symbol_fully_qualified_name(sym), type_cg(sym->type));
+             symbol_fully_qualified_name(sym), type_cg(sym->type));
 
     list_append(m->globlist, code);
 

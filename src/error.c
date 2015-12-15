@@ -26,7 +26,7 @@ error_(enum error errt, const char *format, va_list ap, const char *error_type)
 {
     fprintf(ERROR_OUTPUT, "%s: ", yyfilename);
     if (ERR_COMPILATION == errt)
-	fprintf(ERROR_OUTPUT, "%d:%d: ", yylineno, yycolno);
+        fprintf(ERROR_OUTPUT, "%d:%d: ", yylineno, yycolno);
     fprintf(ERROR_OUTPUT, "%s: ", error_type);
     vfprintf(ERROR_OUTPUT, color("light blue", format), ap);
 }
@@ -81,20 +81,20 @@ int yyerror(const char *s)
     errc++;
     fflush(stdout);
     fprintf(ERROR_OUTPUT, "%s:%d:%d: %s\n",
-	    yyfilename, yylineno, yycolno, color("red", s));
+            yyfilename, yylineno, yycolno, color("red", s));
     len = fprintf(ERROR_OUTPUT, "near ");
 
     char *source_code = "";
     for (int i = old_yytext_index + 1 % YYOLDTEXT_SIZE;
-	 i != old_yytext_index; i = (i + 1) % YYOLDTEXT_SIZE) {
-	asprintf(&source_code, "%s%s", source_code, old_yytext[i]);
+         i != old_yytext_index; i = (i + 1) % YYOLDTEXT_SIZE) {
+        asprintf(&source_code, "%s%s", source_code, old_yytext[i]);
     }
     asprintf(&source_code, "%s%s", source_code, yytext);
     len +=
-	fprintf(ERROR_OUTPUT, "%s\n",
-		strstrip(color("green", source_code))) - COLOR_LEN;
+        fprintf(ERROR_OUTPUT, "%s\n",
+                strstrip(color("green", source_code))) - COLOR_LEN;
     for (int i = 0; i < len - 2; ++i)
-	fputc(' ', ERROR_OUTPUT);
+        fputc(' ', ERROR_OUTPUT);
     fputs(color("fushia", "^\n"), ERROR_OUTPUT);
     return 0;
 }

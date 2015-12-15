@@ -35,3 +35,10 @@
 *~
 \#*
 .\#*
+
+# generated sources
+src/grammar.c
+src/scanner.c
+
+# binary
+bcc

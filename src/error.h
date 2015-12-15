@@ -12,4 +12,4 @@ void internal_error(const char *format, ...);
 int error_count(void);
 int yyerror(const char *s);
 
-#endif	//ERROR_H
+#endif  //ERROR_H

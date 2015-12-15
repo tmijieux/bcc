@@ -1,46 +1,53 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "error.h"
 #include "function.h"
 #include "symbol_table.h"
 #include "program.h"
 #include "module.h"
+#include "option.h"
+#include "scanner.h"
+#include "grammar.h"
 
-extern void yyparse();
-
-extern FILE *yyin;
 char *yyfilename = NULL;
 
 int main(int argc, char *argv[])
 {
+    struct bcc_option bopt;
     FILE *input = NULL;
-    m = module_new("module0");
-    st_init();
+    int err = 0;
 
-    if (argc == 2) {
-	input = fopen(argv[1], "r");
-	yyfilename = strdup(argv[1]);
-	if (input) {
-	    yyin = input;
-	} else {
-	    fprintf(stderr, "%s: Could not open %s\n", *argv, argv[1]);
-	    return EXIT_FAILURE;
-	}
-    } else {
-	yyfilename = *argv;
-	internal_error("\nusage: %s sourcefile.u\n", argv[0]);
-	return EXIT_FAILURE;
+    parse_options(&argc, argv, &bopt);
+
+    for (int i = 1; NULL != argv[i]; ++i) {
+        input = fopen(argv[i], "r");
+        if (NULL != input) {
+            int err;
+            
+            yyin = input;
+            yyfilename = strdup(argv[i]);
+            m = module_new(yyfilename);
+            
+            st_init();
+            yyparse();
+            st_exit();
+            
+            err &= error_count();
+            if (!err)
+                module_print(m, stdout);
+
+            free(yyfilename);
+            fclose(input);
+        } else {
+            fprintf(stderr, "%s: error: %s: %s\n", *argv, argv[1], strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+
+        i++;
     }
-    yyparse();
-    fclose(input);
-
-    int err = error_count();
-    if (!err)
-	module_print(m, stdout);
-
-    free(yyfilename);
-
+    
     return err ? EXIT_FAILURE : EXIT_SUCCESS;
 }
