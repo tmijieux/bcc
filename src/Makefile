@@ -21,6 +21,7 @@ SRC=	grammar.c \
 	expression_codegen.c \
 	statement.c \
 	statement_codegen.c \
+	string_literal.c
 
 ifndef NOGC
 CFLAGS+=-Dmalloc=gcmalloc -Dfree=gcfree \

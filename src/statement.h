@@ -18,23 +18,23 @@ struct statement {
     char *code;
 
     union {
-        struct {
-            const struct list *decl_list;       // for compound
-            const struct list *stmt_list;       // for compound
-        };
+	struct {
+	    const struct list *decl_list;	// for compound
+	    const struct list *stmt_list;	// for compound
+	};
 
-        const struct expression *expr;  // return / expression statement
-        struct {
-            const struct expression *if_cond;   // if
-            const struct statement *then;
-            const struct statement *eelse;
-        };
-        struct {
-            const struct expression *init;      // loops
-            const struct expression *loop_cond;
-            const struct expression *next;
-            const struct statement *body;
-        };
+	const struct expression *expr;	// return / expression statement
+	struct {
+	    const struct expression *if_cond;	// if
+	    const struct statement *then;
+	    const struct statement *eelse;
+	};
+	struct {
+	    const struct expression *init;	// loops
+	    const struct expression *loop_cond;
+	    const struct expression *next;
+	    const struct statement *body;
+	};
     };
 };
 // symbol list
@@ -42,27 +42,27 @@ const char *decl_init_list(const struct list *decl_list);
 struct statement *stmt_expression(const struct expression *expr);
 
 struct statement *stmt_compound(const struct list *decl,
-                                const struct list *stmts);
+				const struct list *stmts);
 
 struct statement *stmt_if(const struct expression *cond,
-                          const struct statement *then);
+			  const struct statement *then);
 
 struct statement *stmt_if_else(const struct expression *cond,
-                               const struct statement *then,
-                               const struct statement *eelse);
+			       const struct statement *then,
+			       const struct statement *eelse);
 
 struct statement *stmt_for(const struct expression *init,
-                           const struct expression *cond,
-                           const struct expression *next,
-                           const struct statement *body);
+			   const struct expression *cond,
+			   const struct expression *next,
+			   const struct statement *body);
 
 struct statement *stmt_while(const struct expression *cond,
-                             const struct statement *body);
+			     const struct statement *body);
 
 struct statement *stmt_do_while(const struct expression *cond,
-                                const struct statement *body);
+				const struct statement *body);
 
 struct statement *stmt_return_void(void);
 struct statement *stmt_return(const struct expression *expr);
 
-#endif  //STATEMENT_H
+#endif	//STATEMENT_H

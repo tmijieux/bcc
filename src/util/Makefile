@@ -1,5 +1,5 @@
-CFLAGS=-Wall -ggdb -O0 -std=gnu99  -I. 
-LDFLAGS= -L.
+CFLAGS=-Wall -ggdb -O0 -std=gnu99  -I. -I ~tmijieux/public/include
+LDFLAGS= -L. -L ~tmijieux/public/lib
 CC=cc
 SRC=	list.c \
 	hash_table.c \

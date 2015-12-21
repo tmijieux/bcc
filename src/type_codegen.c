@@ -1,9 +1,9 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+
 #include <stdio.h>
 #include <stdint.h>
-
 #include <list.h>
 
 #include "codegen.h"
@@ -17,7 +17,7 @@ const char *type_cg_arglist_nameless(const struct list *l)
     int s = list_size(l);
 
     for (int i = 1; i <= s; ++i) {
-        struct symbol *sy = (struct symbol *) list_get(l, i);
+	struct symbol *sy = (struct symbol *) list_get(l, i);
         asprintf(&tmp, "%s%s %s ", tmp, i > 1 ? "," : "", type_cg(sy->type));
     }
 
@@ -30,7 +30,7 @@ const char *type_cg(const struct type *t)
 
     switch (t->type) {
     case TYPE_ARRAY:
-        //        {i32, [ 100 x type ] }
+        //          {i32, [ 100 x type ] }
         asprintf(&lt, "{i64, [ 0 x %s ]}*", type_cg(type_array_values(t)));
         break;
     case TYPE_FUNCTION:
@@ -45,6 +45,7 @@ const char *type_cg(const struct type *t)
     case TYPE_VOID:
         lt = "void";
         break;
+    case TYPE_STRING:
     case TYPE_GENERIC:
         lt = "i8*";
         break;
@@ -75,7 +76,7 @@ const char *type_cg_arglist(const struct list *l)
 {
     char *tmp = "";
     int s = list_size(l);
-
+    
     for (int i = 1; i <= s; ++i) {
         struct symbol *sy = (struct symbol *) list_get(l, i);
         asprintf(&tmp, "%s%s%s %%%s.%s", tmp,

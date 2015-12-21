@@ -53,8 +53,8 @@ struct symbol_variable {
     int assigned_constant;
     enum enum_type constant_type;
     union {
-        float valuef;
-        float valuei;
+	float valuef;
+	float valuei;
     };
 };
 
@@ -81,8 +81,8 @@ struct symbol {
 
     size_t size;
     union {
-        struct symbol_variable variable;
-        struct symbol_function function;
+	struct symbol_variable variable;
+	struct symbol_function function;
     };
 };
 
@@ -97,4 +97,4 @@ void symbol_print(const struct symbol *sy);
 char *symbol_fully_qualified_name(const struct symbol *sym);
 void symbol_use(struct symbol *sy);
 
-#endif  //SYMBOL_H
+#endif	//SYMBOL_H

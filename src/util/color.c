@@ -12,8 +12,6 @@ static struct hash_table *colors;
 
 int COLOR_LEN;
 
-#define RESET "\e[39m"
-
 #define ADD_COLOR(x, y)				\
     ht_add_entry(colors, x , y) 
 
@@ -22,13 +20,13 @@ static void clr_init(void)
 {
     colors = ht_create(100, NULL);
 
-    ADD_COLOR("RESET", RESET);
+    ADD_COLOR("RESET", COLOR_RESET);
     ADD_COLOR("red", "\e[91m");
     ADD_COLOR("light blue", "\e[96m");
     ADD_COLOR("fushia", "\e[95m");
     ADD_COLOR("green", "\e[92m");
     ADD_COLOR("yellow", "\e[93m");
-
+    
     COLOR_LEN = strlen(color("green", ""));
 }
 
@@ -41,6 +39,6 @@ const char *color(const char *clr, const char *message)
     }
 
     char *clr_message;
-    asprintf(&clr_message, "%s%s" RESET, clr_code, message);
+    asprintf(&clr_message, "%s%s" COLOR_RESET, clr_code, message);
     return clr_message;
 }

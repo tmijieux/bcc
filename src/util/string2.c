@@ -44,3 +44,13 @@ char *strstrip(const char *str)
 	    strip_[i] = ' ';
     return strip_;
 }
+
+char *strstrip2(const char *str)
+{
+    char *strip_ = strdup(str);
+    size_t l = strlen(str);
+    if (strip_[l - 1] == '"')
+	strip_[l - 1] = '\0';
+
+    return strip_;
+}
