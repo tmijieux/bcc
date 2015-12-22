@@ -1,18 +1,7 @@
 #ifndef TYPE_H
 #define TYPE_H
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdint.h>
-
-struct list;
-
-#define  SIZE_INT     sizeof(int)
-#define  SIZE_FLOAT   sizeof(float)
-#define  SIZE_ADDR    sizeof(void*)
-
-enum enum_type {
+enum type_type {
     TYPE_UNDEF = 10,
     TYPE_VOID,	// cannot be applied on a variable
     TYPE_GENERIC,	// generic is to allow to continue
@@ -32,16 +21,25 @@ enum enum_type {
     TYPE_FUNCTION,	// cannot be applied on a variable
 };
 
+#include "expression.h"
+
 struct type_array {
     const struct type *values;
     const struct expression *array_size;
 };
+
+#include "util/list.h"
+
+#include <stdint.h>
 
 struct type_function {
     const struct type *return_value;
     uint16_t argc;
     struct list *argv;
 };
+
+#include <stdbool.h>
+#include <stdlib.h>
 
 /**
  * type variables are designed to be immutable
@@ -51,7 +49,7 @@ struct type_function {
  *
  */
 struct type {
-    enum enum_type type;
+    enum type_type type;
 
     union {
 	struct type_array array_type;
@@ -120,5 +118,14 @@ extern const struct type *last_type_name;
  *  of a function
  */
 const struct type *last_function_return_type;
+
+
+
+const struct type *type_get(const char *type_name);
+const struct type *type_get_pointer_type(const struct type *type);
+
+const struct type *
+type_get_array_type(const struct type *type,
+                    const struct expression *const_expr_array_size);
 
 #endif	//TYPE_H

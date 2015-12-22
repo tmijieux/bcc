@@ -39,6 +39,9 @@
 # generated sources
 src/grammar.c
 src/scanner.c
+grammar.tab.h
 
 # binary
+src/bcc
 bcc
+

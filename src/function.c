@@ -46,7 +46,7 @@ int fun_set_body(struct function *fun, const struct statement *compnd)
 		// add an implicit return void at end of
 		// void function :
 		struct list *l = list_copy(compnd->stmt_list);
-		list_append(l, stmt_return_void());
+		list_append(l, stmt_return(void_expression));
 		compnd = stmt_compound(compnd->decl_list, l);
 	    } else {
 		// if the function is not void, it MUST

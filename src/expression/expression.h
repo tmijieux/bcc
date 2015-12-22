@@ -1,10 +1,11 @@
-#ifndef EXPRESSION_H
-#define EXPRESSION_H
-
 
 #include <stdbool.h>
 #include "symbol.h"
 #include "type.h"
+#include "constant.h"
+
+#ifndef EXPRESSION_H
+#define EXPRESSION_H
 
 enum expression_type {
     EXPR_SYMBOL,			       
@@ -14,7 +15,7 @@ enum expression_type {
     EXPR_PRE_DEC,	//   --x
     EXPR_POST_INC,	//  x++
     EXPR_POST_DEC,	//  x--
-    EXPR_POSTFIX,	// a[i]
+    EXPR_ARRAY,	// a[i]
     EXPR_ARRAY_SIZE,
     EXPR_MULTIPLICATION,
     EXPR_MODULO,
@@ -57,14 +58,10 @@ struct expression {
     const struct list *args; // expression list for function calls
 
     bool constant;
-    union {
-	int constanti;
-	float constantf;
-	long constantl;
-        char *constantstr;
-	struct symbol *symbol;
-	const struct type *target_type;
-    };
+    struct constant *cst;
+    
+    const struct type *target_type;
+    struct symbol *symbol;
 
     char *vcode;// code for computing value
     char *vreg;	// register for value
@@ -79,20 +76,28 @@ struct expression {
 };
 
 bool is_not_zero_constant_expr(const struct expression *expr);
-
 bool expr_is_test(const struct expression *e);
 bool expr_is_operation(const struct expression *e);
 
-const struct expression *expr_constant(const struct type *ty, ...);
+const struct expression *expr_constant(struct constant *cst);
 const struct expression *expr_symbol(struct symbol *sym);	// var ref
-
 const struct expression *expr_map(const struct expression *fun,
 				  const struct expression *array);
 const struct expression *expr_reduce(const struct expression *fun,
 				     const struct expression *array);
-const struct expression *expr_funcall(struct symbol *fun, struct list *args);
-const struct expression *expr_postfix(const struct expression *array,
-				      const struct expression *index);
+const struct expression *expr_funcall(const struct expression *fun,
+                                      struct list *args);
+const struct expression *expr_array(const struct expression *array,
+		                    const struct expression *index);
+
+const struct expression *
+expr_struct_access(const struct expression *struct_,
+                   const char *field_name);
+const struct expression *
+expr_struct_deref(const struct expression *struct_,
+                  const char *field_name);
+
+
 
 // Unary ops
 const struct expression *expr_unary(char c, const struct expression *e);
@@ -148,7 +153,15 @@ const struct expression *expr_zero_extend(const struct expression *op,
 					  const struct type *target);
 const struct expression *expr_trunc(const struct expression *op,
 				    const struct type *target);
-const struct expression *expr_array_size(const struct expression *array);
+const struct expression *expr_sizeof_expr(const struct expression *expr);
+const struct expression *expr_sizeof_typename(const struct type *t);
+
+
+const struct expression *expr_list(const struct expression *expr_list,
+                                   const struct expression *expr);
+
+extern const struct expression *void_expression;
+
 
 
 #endif	//EXPRESSION_H

@@ -1,6 +1,6 @@
 LEX=lex
 YACC=bison
-CFLAGS=-Wall -std=gnu99 -I. -I./util -O0 -ggdb
+CFLAGS=-Wall -std=gnu99 -I. -I./util -O0 -ggdb -D_GNU_SOURCE
 LDFLAGS=-L. -lutil
 CC=cc
 TARGET=bcc
@@ -21,7 +21,10 @@ SRC=	grammar.c \
 	expression_codegen.c \
 	statement.c \
 	statement_codegen.c \
-	string_literal.c
+	string_literal.c \
+	constant.c \
+	specifier.c \
+	initializer.c \
 
 ifndef NOGC
 CFLAGS+=-Dmalloc=gcmalloc -Dfree=gcfree \

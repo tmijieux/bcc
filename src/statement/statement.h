@@ -51,6 +51,9 @@ struct statement *stmt_if_else(const struct expression *cond,
 			       const struct statement *then,
 			       const struct statement *eelse);
 
+struct statement *stmt_switch(const struct expression *test,
+                              const struct statement *body);
+
 struct statement *stmt_for(const struct expression *init,
 			   const struct expression *cond,
 			   const struct expression *next,
@@ -62,7 +65,9 @@ struct statement *stmt_while(const struct expression *cond,
 struct statement *stmt_do_while(const struct expression *cond,
 				const struct statement *body);
 
-struct statement *stmt_return_void(void);
 struct statement *stmt_return(const struct expression *expr);
+struct statement *stmt_continue();
+struct statement *stmt_break();
+struct statement *stmt_goto(const char *label);
 
 #endif	//STATEMENT_H

@@ -22,7 +22,7 @@ static struct expression *expr_new(enum expression_type ext)
     return expr;
 }
 
-bool is_not_zero_constant_expr(const struct expression * expr)
+bool is_not_zero_constant_expr(const struct expression *expr)
 {
     if (expr->expression_type == EXPR_CONSTANT) {
 	if (expr->type == type_int && expr->constanti == 0)
@@ -210,7 +210,8 @@ const struct expression *expr_reduce(const struct expression *fun,
     return expr;
 }
 
-const struct expression *expr_funcall(struct symbol *fun, struct list *args)
+const struct expression *expr_funcall(const struct expression *fun,
+                                      struct list *args)
 {
     struct expression *expr = expr_new(EXPR_FUNCALL);
     expr->codegen = &expr_cg_funcall;
@@ -255,10 +256,10 @@ const struct expression *expr_funcall(struct symbol *fun, struct list *args)
     return expr;
 }
 
-const struct expression *expr_postfix(const struct expression *array,
+const struct expression *expr_array(const struct expression *array,
 				      const struct expression *index)
 {
-    struct expression *expr = expr_new(EXPR_POSTFIX);
+    struct expression *expr = expr_new(EXPR_ARRAY);
 
     expr->array = array;
     expr->index = index;
@@ -274,7 +275,7 @@ const struct expression *expr_postfix(const struct expression *array,
 	error("array index must be an integer\n");
     }
 
-    expr->codegen = &expr_cg_postfix;
+    expr->codegen = &expr_cg_array;
     return expr;
 }
 
@@ -307,7 +308,7 @@ static const struct expression *xcrement(enum expression_type et,
     expr->type = op->type;
     expr->symbol = op->symbol;
 
-    if (op->expression_type != EXPR_POSTFIX &&
+    if (op->expression_type != EXPR_ARRAY &&
 	op->expression_type != EXPR_SYMBOL) {
 	error("%s cannot be applied\nto non left"
 	      " value '%s'\n", opname,
@@ -505,7 +506,7 @@ const struct expression *expr_assignment(const struct expression *lop,
 
     switch (lop->expression_type) {
     case EXPR_SYMBOL:
-    case EXPR_POSTFIX:
+    case EXPR_ARRAY:
     case EXPR_ARRAY_SIZE:
 	// nothing
 	break;

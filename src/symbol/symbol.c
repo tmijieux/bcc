@@ -39,7 +39,7 @@ void symbol_print(const struct symbol *sy)
     fputs("\b\n", stderr);
 }
 
-struct symbol *symbol_check(const char *name)
+struct symbol *stable_get(const char *name)
 {
     struct symbol *sy = NULL;
     if (!st_search(name, &sy)) {

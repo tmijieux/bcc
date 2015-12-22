@@ -1,12 +1,7 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
-#include <stdlib.h>
-#include <stdint.h>
-
-#include <list.h>
-
-#include "type.h"
+struct symbol;
 
 #define SYM_MAX_SIZE 16
 
@@ -40,6 +35,7 @@ enum linkage {
     EXTERNAL
 };
 
+#include "type.h"
 struct symbol_variable {
     int is_global;
     int is_parameter;
@@ -51,7 +47,7 @@ struct symbol_variable {
     // allocate the arrays
 
     int assigned_constant;
-    enum enum_type constant_type;
+    enum type_type constant_type;
     union {
 	float valuef;
 	float valuei;
@@ -61,6 +57,10 @@ struct symbol_variable {
 struct symbol_function {
 
 };
+
+#include <stdlib.h>
+#include <stdint.h>
+
 
 struct symbol {
     const char *name;
@@ -90,7 +90,7 @@ struct symbol *symbol_new(const char *name, const struct type *t);
 
 // check a symbol is defined in the symbol_table and get it
 // or return NULL if it is not defined
-struct symbol *symbol_check(const char *name);
+struct symbol *stable_get(const char *name);
 
 // symbol helpers
 void symbol_print(const struct symbol *sy);

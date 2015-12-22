@@ -1,7 +1,4 @@
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
+#include <stdio.h>
 #include "type.h"
 #include "list.h"
 #include "symbol.h"
@@ -17,7 +14,7 @@
     type_##ty##_v = type_new(TYPE_##TY);		\
     ((struct type*)type_##ty##_v)->is_vector = true;	\
 
-static struct type *type_new(enum enum_type t);
+static struct type *type_new(enum type_type t);
 
 DEFINE_TYPE(undef);
 DEFINE_TYPE(generic);
@@ -107,7 +104,7 @@ size_t type_size(const struct type * t)
 
 /********************************************/
 
-static struct type *type_new(enum enum_type et)
+static struct type *type_new(enum type_type et)
 {
     struct type *t = calloc(sizeof *t, 1);
     t->type = et;
@@ -174,11 +171,11 @@ static const char *str_expression_size(const struct expression *expr)
     char *str = "";
     if (expr->expression_type == EXPR_CONSTANT) {
 	if (expr->type == type_int) {
-	    asprintf(&str, "%d x ", expr->constanti);
+	    asprintf(&str, "%d x ", expr->cst->integer.intv.signed_);
 	}
 
 	if (expr->type == type_long) {
-	    asprintf(&str, "%ld x ", expr->constantl);
+	    asprintf(&str, "%ld x ", expr->cst->integer.longv.signed_);
 	}
     }
     if (expr->expression_type == EXPR_SYMBOL) {
