@@ -1,14 +1,17 @@
 
-#include <stdbool.h>
-#include "symbol.h"
-#include "type.h"
-#include "constant.h"
-
 #ifndef EXPRESSION_H
 #define EXPRESSION_H
 
+struct expression;
+
+#include <stdbool.h>
+#include "../symbol/symbol.h"
+#include "../type/type.h"
+#include "../constant/constant.h"
+
 enum expression_type {
-    EXPR_SYMBOL,			       
+    EXPR_VOID,
+    EXPR_SYMBOL,
     EXPR_CONSTANT,
     EXPR_UNARY_MINUS,	// -x
     EXPR_PRE_INC,	//  ++x
@@ -16,7 +19,7 @@ enum expression_type {
     EXPR_POST_INC,	//  x++
     EXPR_POST_DEC,	//  x--
     EXPR_ARRAY,	// a[i]
-    EXPR_ARRAY_SIZE,
+    EXPR_SIZEOF,
     EXPR_MULTIPLICATION,
     EXPR_MODULO,
     EXPR_DIVISION,
@@ -30,11 +33,13 @@ enum expression_type {
     EXPR_NEQ,
     EXPR_AND,
     EXPR_OR,
+    EXPR_XOR,
+    EXPR_LOGICAL_AND,
+    EXPR_LOGICAL_OR,
+    EXPR_SHR,
+    EXPR_SHL,
     EXPR_ASSIGNMENT,
-    EXPR_MAP,
-    EXPR_REDUCE,
     EXPR_FUNCALL,
-    EXPR_FUNCALL_PARAMS,
     EXPR_FPSI_CAST,
     EXPR_BITCAST,
     EXPR_SIGN_EXTEND,
@@ -57,8 +62,8 @@ struct expression {
     const struct expression *index;
     const struct list *args; // expression list for function calls
 
-    bool constant;
-    struct constant *cst;
+//    bool constant;
+    struct constant *constant;
     
     const struct type *target_type;
     struct symbol *symbol;
@@ -134,11 +139,26 @@ const struct expression *expr_division(const struct expression *lop,
 				       const struct expression *rop);
 const struct expression *expr_modulo(const struct expression *lop,
                                      const struct expression *rop);
+const struct expression *expr_shift_right(const struct expression *lop,
+                                          const struct expression *rop);
+
+const struct expression *expr_shift_left(const struct expression *lop,
+                                         const struct expression *rop);
+
 const struct expression *expr_and(const struct expression *lop,
                                   const struct expression *rop);
 const struct expression *expr_or(const struct expression *lop,
                                  const struct expression *rop);
+const struct expression *expr_xor(const struct expression *lop,
+                                 const struct expression *rop);
+const struct expression *expr_logical_and(const struct expression *lop,
+                                          const struct expression *rop);
+const struct expression *expr_logical_or(const struct expression *lop,
+                                         const struct expression *rop);
+
+
 const struct expression *expr_assignment(const struct expression *lop,
+                                         char c,
 					 const struct expression *rop);
 
 

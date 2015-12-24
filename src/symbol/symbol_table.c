@@ -6,12 +6,12 @@
 #include <stdlib.h>
 
 #include "symbol_table.h"
-#include "hash_table.h"
-#include "list.h"
-#include "error.h"
-#include "program.h"
-#include "codegen.h"
-#include "function.h"
+#include "../util/hash_table.h"
+#include "../util/list.h"
+#include "../error/error.h"
+#include "../program.h"
+#include "../codegen.h"
+#include "../function.h"
 
 struct symbol_table {
     int level;

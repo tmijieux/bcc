@@ -1,7 +1,8 @@
 #ifndef MODULE_H
 #define MODULE_H
 
-#include "symbol.h"
+#include <stdio.h>
+#include "symbol/symbol.h"
 
 struct module;
 struct function;

@@ -4,12 +4,12 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <list.h>
 
-#include "codegen.h"
-#include "symbol.h"
 #include "type.h"
-#include "expression.h"
+#include "../codegen.h"
+#include "../symbol/symbol.h"
+#include "../expression/expression.h"
+#include "../util/list.h"
 
 const char *type_cg_arglist_nameless(const struct list *l)
 {

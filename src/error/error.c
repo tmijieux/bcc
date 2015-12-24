@@ -43,6 +43,13 @@ void warning(const char *format, ...)
     error_(ERR_COMPILATION, format, ap, color("yellow", "warning"));
 }
 
+void internal_warning(const char *format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    error_(ERR_OTHER, format, ap, color("yellow", "internal warning"));
+}
+
 void error(const char *format, ...)
 {
     errc++;
@@ -72,7 +79,6 @@ void internal_error(const char *format, ...)
     fatal_error__(ERR_OTHER, format, ap);
 }
 
-
 void debugi(const char *format, ...)
 {
     va_list ap;
@@ -83,7 +89,7 @@ void debugi(const char *format, ...)
 extern const char *old_yytext[];
 extern unsigned int old_yytext_index;
 
-int yyerror(const char *s)
+int yyerror(struct module *m, const char *s)
 {
     int len;
     errc++;

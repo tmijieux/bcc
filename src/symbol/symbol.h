@@ -3,6 +3,10 @@
 
 struct symbol;
 
+#include <stdlib.h>
+#include <stdint.h>
+#include "../type/type.h"
+
 #define SYM_MAX_SIZE 16
 
 enum symbol_type {
@@ -35,7 +39,6 @@ enum linkage {
     EXTERNAL
 };
 
-#include "type.h"
 struct symbol_variable {
     int is_global;
     int is_parameter;
@@ -58,8 +61,6 @@ struct symbol_function {
 
 };
 
-#include <stdlib.h>
-#include <stdint.h>
 
 
 struct symbol {
@@ -96,5 +97,6 @@ struct symbol *stable_get(const char *name);
 void symbol_print(const struct symbol *sy);
 char *symbol_fully_qualified_name(const struct symbol *sym);
 void symbol_use(struct symbol *sy);
+struct symbol *symbol_generic(void);
 
 #endif	//SYMBOL_H

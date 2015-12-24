@@ -3,14 +3,16 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
-#include "statement.h"
-#include "program.h"
-#include "symbol.h"
-#include "codegen.h"
-#include "color.h"
-#include "error.h"
 
-#include "stmt_codegen.h"
+#include "statement.h"
+#include "statement_codegen.h"
+
+#include "../program.h"
+#include "../codegen.h"
+#include "../symbol/symbol.h"
+#include "../error/error.h"
+#include "../util/color.h"
+
 
 /**** Helpers *************/
 
@@ -18,7 +20,7 @@ static inline const struct expression *
 to_boolean(const struct expression *cond)
 {
     if (!expr_is_test(cond)) {
-	const struct expression *zero = expr_constant(type_int, 0);
+	const struct expression *zero = expr_constant(constant_integer_int(0));
 	cond = expr_neq(cond, zero);
     }
 
@@ -33,6 +35,11 @@ static struct statement *stmt_new(enum statement_type st)
     stmt->code = "";
     stmt->statement_type = st;
     return stmt;
+}
+
+struct statement *stmt_void(void)
+{
+    return stmt_expression(void_expression);
 }
 
 struct statement *stmt_expression(const struct expression *expr)
@@ -56,7 +63,7 @@ struct statement *stmt_compound(const struct list *decl,
 struct statement *stmt_if(const struct expression *cond,
 			  const struct statement *then)
 {
-    struct statement *stmt = stmt_new(STMT_SELECTION);
+    struct statement *stmt = stmt_new(STMT_IF);
     cond = to_boolean(cond);
     stmt->if_cond = cond;
     stmt->then = then;
@@ -68,7 +75,7 @@ struct statement *stmt_if_else(const struct expression *cond,
 			       const struct statement *then,
 			       const struct statement *eelse)
 {
-    struct statement *stmt = stmt_new(STMT_SELECTION);
+    struct statement *stmt = stmt_new(STMT_IF_ELSE);
     cond = to_boolean(cond);
     stmt->if_cond = cond;
     stmt->then = then;
@@ -92,7 +99,7 @@ struct statement *stmt_for(const struct expression *init,
 struct statement *stmt_while(const struct expression *cond,
 			     const struct statement *body)
 {
-    struct statement *stmt = stmt_new(STMT_ITERATION);
+    struct statement *stmt = stmt_new(STMT_WHILE);
     cond = to_boolean(cond);
     stmt->loop_cond = cond;
     stmt->body = body;
@@ -103,7 +110,7 @@ struct statement *stmt_while(const struct expression *cond,
 struct statement *stmt_do_while(const struct expression *cond,
 				const struct statement *body)
 {
-    struct statement *stmt = stmt_new(STMT_ITERATION);
+    struct statement *stmt = stmt_new(STMT_DO_WHILE);
     cond = to_boolean(cond);
     stmt->loop_cond = cond;
     stmt->body = body;
@@ -113,7 +120,7 @@ struct statement *stmt_do_while(const struct expression *cond,
 
 struct statement *stmt_return_void(void)
 {
-    struct statement *stmt = stmt_new(STMT_JUMP);
+    struct statement *stmt = stmt_new(STMT_RETURN);
     if (last_function_return_type != type_void) {
 	error("return value can't be void. expected %s\n",
 	      color("yellow", type_printable(last_function_return_type)));
@@ -124,7 +131,7 @@ struct statement *stmt_return_void(void)
 
 struct statement *stmt_return(const struct expression *expr)
 {
-    struct statement *stmt = stmt_new(STMT_JUMP);
+    struct statement *stmt = stmt_new(STMT_RETURN);
 
     if (last_function_return_type == type_void) {
 	error("returning non void value\n");
@@ -146,4 +153,41 @@ struct statement *stmt_return(const struct expression *expr)
     stmt->expr = expr;
     stmt->codegen = &stmt_cg_return;
     return stmt;
+}
+
+struct statement *stmt_continue()
+{
+    return stmt_void();
+}
+
+struct statement *stmt_break()
+{
+    return stmt_void();
+}
+
+struct statement *stmt_goto(const char *label)
+{
+    return stmt_void();
+}
+
+struct statement *stmt_switch(const struct expression *test,
+                              const struct statement *body)
+{
+    return stmt_void();
+}
+
+struct statement *stmt_label(struct statement *stmt, const char *label)
+{
+    return stmt_void();
+}
+
+struct statement *stmt_case(struct statement *stmt,
+                            const struct expression *const_expr)
+{
+    return stmt_void();
+}
+
+struct statement *stmt_default(struct statement *stmt)
+{
+    return stmt_void();
 }

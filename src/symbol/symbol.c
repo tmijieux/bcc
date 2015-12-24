@@ -1,14 +1,13 @@
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "symbol.h"
-#include "type.h"
 #include "symbol_table.h"
-#include "error.h"
-#include "program.h"
+
+#include "../type/type.h"
+#include "../error/error.h"
+#include "../program.h"
 
 struct symbol *symbol_new(const char *name, const struct type *t)
 {
@@ -25,6 +24,13 @@ struct symbol *symbol_new(const char *name, const struct type *t)
     sy->variable.used = false;
     
     return sy;
+}
+
+struct symbol *symbol_generic(void)
+{
+    struct symbol *s = symbol_new("generic", type_generic);
+    s->suffix = "generic";
+    return s;
 }
 
 void symbol_use(struct symbol *sy)

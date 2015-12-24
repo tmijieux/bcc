@@ -3,12 +3,13 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "statement.h"
-#include "program.h"
-#include "symbol.h"
-#include "codegen.h"
-#include "color.h"
-#include "error.h"
+#include "../program.h"
+#include "../codegen.h"
+#include "../symbol/symbol.h"
+#include "../error/error.h"
+#include "../util/color.h"
 
 static const char *str_concat_list(const struct list *l,
                                    const char *(*get_str__) (void *))

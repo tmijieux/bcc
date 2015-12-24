@@ -8,28 +8,32 @@
 #include <string.h>
 
 #include "expression.h"
-#include "error.h"
-#include "color.h"
-#include "expr_codegen.h"
-#include "string_literal.h"
+#include "expression_codegen.h"
+#include "../constant/string_literal.h"
+#include "../error/error.h"
+#include "../util/color.h"
 
 static struct expression *expr_new(enum expression_type ext)
 {
     struct expression *expr = calloc(sizeof(*expr), 1);
     expr->expression_type = ext;
-    expr->vcode = expr->acode = expr->vreg = expr->areg =
-	expr->source_code = "";
+    expr->vcode = expr->acode =
+        expr->vreg = expr->areg = expr->source_code = "";
     return expr;
+}
+
+const struct expression *void_expression = NULL;
+
+__attribute__((constructor))
+void init_void_expression(void)
+{
+    void_expression = expr_new(EXPR_VOID);
 }
 
 bool is_not_zero_constant_expr(const struct expression *expr)
 {
-    if (expr->expression_type == EXPR_CONSTANT) {
-	if (expr->type == type_int && expr->constanti == 0)
-	    return false;
-	if (expr->type == type_long && expr->constantl == 0)
-	    return false;
-    }
+    if (expr->expression_type == EXPR_CONSTANT)
+        return constant_is_zero(expr->constant);
     return true;
 }
 
@@ -74,139 +78,17 @@ const struct expression *expr_symbol(struct symbol *sym)
     symbol_use(sym);
     expr->codegen = &expr_cg_symbol;
     expr->areg = symbol_fully_qualified_name(sym);
-
+    expr->source_code = sym->name;
+        
     return expr;
 }
 
-const struct expression *expr_constant(const struct type *ty, ...)
+const struct expression *expr_constant(struct constant *cst)
 {
-    va_list ap;
-    va_start(ap, ty);
-
     struct expression *expr = expr_new(EXPR_CONSTANT);
-    expr->type = ty;
-
-    if (expr->type == type_int) {
-	expr->constanti = va_arg(ap, int);
-    } else if (expr->type == type_float) {
-	expr->constantf = (float) va_arg(ap, double);
-	// there can't be a float in va_arg
-    } else if (expr->type == type_long) {
-	expr->constantl = va_arg(ap, long);
-    } else if (expr->type == type_string) {
-        expr->constantstr = va_arg(ap, char*);
-        string_get_or_create_literal(expr->constantstr);
-    } else {
-	debug("%s\n", type_printable(ty));
-	internal_error("unexpected parse error %s:%d\n", __FILE__, __LINE__);
-    }
-
-    va_end(ap);
+    expr->type = cst->type;
+    expr->constant = cst;
     expr->codegen = &expr_cg_constant;
-    return expr;
-}
-
-const struct expression *expr_map(const struct expression *fun,
-				  const struct expression *array)
-{
-    bool valid_op_F = false, valid_op_A = false;
-
-    struct expression *expr = expr_new(EXPR_MAP);
-    expr->fun = fun;
-    expr->array = array;
-
-    int trigger_error =
-	(fun->type != type_generic && array->type != type_generic);
-
-    if (trigger_error && !type_is_function(fun->type)) {
-	error("first operand to map operator" " must be a function.\n");
-    } else {
-	if (trigger_error && type_function_argc(fun->type) != 1) {
-	    if (trigger_error)
-		error("map first operand should"
-		      " take exactly one parameter.\n");
-	} else if (trigger_error) {
-	    valid_op_F = true;
-	}
-    }
-
-    if (trigger_error && !type_is_array(array->type)) {
-	error("second operand to map operator" " must be an array.\n");
-    } else if (trigger_error) {
-	valid_op_A = true;
-    }
-
-    if (valid_op_F && valid_op_A) {
-	struct symbol *tmp;
-	// the function 1st (and last) argument
-	tmp = list_get(type_function_argv(fun->type), 1);
-	const struct type *ty = tmp->type;	// its type
-
-	if (!type_equal(ty, type_array_values(array->type))) {
-	    // must be the same as the array values
-	    error("map operands: type mismatch\n");
-	}
-	expr->type = type_new_array_type(type_function_return(fun->type),
-					 expr_array_size(array)
-					 /*type_array_size( array->type )*/);
-    } else {
-	expr->type = type_generic;
-    }
-
-    expr->codegen = &expr_cg_map;
-    return expr;
-}
-
-const struct expression *expr_reduce(const struct expression *fun,
-				     const struct expression *array)
-{
-    bool valid_op_F = false, valid_op_A = false;
-
-    struct expression *expr = expr_new(EXPR_REDUCE);
-    expr->fun = fun;
-    expr->array = array;
-
-    if (!type_is_function(fun->type)) {
-	error("First operand to reduce operator must be" " a function.\n");
-    } else {
-	if (type_function_argc(fun->type) != 2) {
-	    error("reduce first operand should take exactly "
-		  "two parameters.\n");
-	} else {
-	    valid_op_F = true;
-	}
-    }
-
-    if (!type_is_array(array->type)) {
-	error("Second operand to reduce operator must be an array.\n");
-    } else {
-	valid_op_A = 1;
-    }
-
-    if (valid_op_A && valid_op_F) {
-	struct symbol *sy1, *sy2;
-	const struct type *ty1, *ty2;
-	const struct list *argv = type_function_argv(fun->type);
-
-	sy1 = list_get(argv, 1);
-	ty1 = sy1->type;
-
-	sy2 = list_get(argv, 2);
-	ty2 = sy2->type;
-
-	if (!type_equal(ty1, ty2)) {
-	    error("reduce first operand: invalid parameters\n");
-	}
-
-	if (!type_equal(ty1, type_array_values(array->type))) {
-	    error("reduce operands: type mismatch\n");
-	}
-
-	expr->type = type_function_return(fun->type);
-    } else {
-	expr->type = type_generic;
-    }
-    expr->codegen = &expr_cg_reduce;
     return expr;
 }
 
@@ -216,12 +98,12 @@ const struct expression *expr_funcall(const struct expression *fun,
     struct expression *expr = expr_new(EXPR_FUNCALL);
     expr->codegen = &expr_cg_funcall;
     expr->args = args;
-    expr->symbol = fun;
+//    expr->symbol = fun;
 
     assert(args != NULL);
 
     if (!type_is_function(fun->type)) {
-	fatal_error("'%s' is not a function.\n", fun->name);
+	fatal_error("'%s' is not a function.\n", fun->source_code);
 	expr->type = type_generic;
 	return expr;
     }
@@ -232,7 +114,7 @@ const struct expression *expr_funcall(const struct expression *fun,
     expr->type = type_function_return(fun->type);
 
     if (list_size(args) != s) {
-	error("%s: illegal number of arguments.\n", fun->name);
+	error("%s: illegal number of arguments.\n", fun->source_code);
 	return expr;
     }
 
@@ -245,7 +127,7 @@ const struct expression *expr_funcall(const struct expression *fun,
 
 	if (!type_equal(tparg, targ)) {
 	    error("%s(): argument %d has invalid type.\n"
-		  "expected %s %s %s %s\n", fun->name, i,
+		  "expected %s %s %s %s\n", fun->source_code, i,
 		  color("green", type_printable(tparg)),
 		  color("light blue", "but"),
 		  color("yellow", type_printable(targ)),
@@ -257,7 +139,7 @@ const struct expression *expr_funcall(const struct expression *fun,
 }
 
 const struct expression *expr_array(const struct expression *array,
-				      const struct expression *index)
+                                    const struct expression *index)
 {
     struct expression *expr = expr_new(EXPR_ARRAY);
 
@@ -449,7 +331,7 @@ const struct expression *expr_modulo(const struct expression *lop,
                                      const struct expression *rop)
 {
     if (!(type_is_integer(lop->type) && type_is_integer(rop->type))) {
-        error("modulo require both operands to be og integer type\n");
+        error("modulo require both operands to be of integer type\n");
         struct expression *expr = expr_new(EXPR_MODULO);
         expr->type = type_generic;
         return expr;
@@ -457,6 +339,26 @@ const struct expression *expr_modulo(const struct expression *lop,
 
     return operation(EXPR_MODULO, "mod", lop, rop);
 }
+
+const struct expression *expr_shift_left(const struct expression *lop,
+                                     const struct expression *rop)
+{
+    if (!(type_is_integer(lop->type) && type_is_integer(rop->type))) {
+        error("modulo require both operands to be of integer type\n");
+        struct expression *expr = expr_new(EXPR_MODULO);
+        expr->type = type_generic;
+        return expr;
+    }
+
+    return operation(EXPR_SHL, "mod", lop, rop);
+}
+
+const struct expression *expr_shift_right(const struct expression *lop,
+				       const struct expression *rop)
+{
+    return operation(EXPR_SHR, "division", lop, rop);
+}
+
 
 const struct expression *expr_division(const struct expression *lop,
 				       const struct expression *rop)
@@ -467,24 +369,64 @@ const struct expression *expr_division(const struct expression *lop,
 const struct expression *expr_and(const struct expression *lop,
                                   const struct expression *rop)
 {
-    const struct expression *zero = expr_constant(type_int, 0);
-    return operation(EXPR_AND, "and",
+    return operation(EXPR_AND, "and", lop, rop);
+}
+
+const struct expression *expr_logical_and(const struct expression *lop,
+                                          const struct expression *rop)
+{
+    const struct expression *zero = expr_constant(constant_integer_int(0));
+    return operation(EXPR_LOGICAL_AND, "and",
                      operation(EXPR_NEQ, "zero test", lop, zero),
                      operation(EXPR_NEQ, "zero test", rop, zero));
 }
 
 const struct expression *expr_or(const struct expression *lop,
+                                 const struct expression *rop)
+{
+    return operation(EXPR_OR, "or", lop, rop);
+}
+
+const struct expression *expr_xor(const struct expression *lop,
                                   const struct expression *rop)
 {
-    const struct expression *zero = expr_constant(type_int, 0);
-    return operation(EXPR_OR, "or",
+    return operation(EXPR_XOR, "xor", lop, rop);
+}
+
+
+const struct expression *expr_logical_or(const struct expression *lop,
+                                 const struct expression *rop)
+{
+    const struct expression *zero = expr_constant(constant_integer_int(0));
+    return operation(EXPR_LOGICAL_OR, "or",
                      operation(EXPR_NEQ, "zero test", lop, zero),
                      operation(EXPR_NEQ, "zero test", rop, zero));
 }
 
+
 const struct expression *expr_assignment(const struct expression *lop,
+                                         char op,
 					 const struct expression *rop)
 {
+    switch (op){
+    case '*': return expr_assignment(lop, '=', expr_multiplication(lop, rop));
+    case '/': return expr_assignment(lop, '=', expr_division(lop, rop));
+    case '%': return expr_assignment(lop, '=', expr_modulo(lop, rop));
+    case '+': return expr_assignment(lop, '=', expr_addition(lop, rop));
+    case '-': return expr_assignment(lop, '=', expr_substraction(lop, rop));
+    case '>': return expr_assignment(lop, '=', expr_shift_right(lop, rop));
+    case '<': return expr_assignment(lop, '=', expr_shift_left(lop, rop));
+    case '&': return expr_assignment(lop, '=', expr_and(lop, rop));
+    case '^': return expr_assignment(lop, '=', expr_xor(lop, rop));
+    case '|': return expr_assignment(lop, '=', expr_or(lop, rop));
+
+    case '=':
+        break;
+    default:
+        internal_error("assignment bad operator: %c\n", op);
+        break;
+    };
+    
     struct expression *expr = expr_new(EXPR_ASSIGNMENT);
     expr->left_operand = lop;
     expr->right_operand = rop;
@@ -507,7 +449,6 @@ const struct expression *expr_assignment(const struct expression *lop,
     switch (lop->expression_type) {
     case EXPR_SYMBOL:
     case EXPR_ARRAY:
-    case EXPR_ARRAY_SIZE:
 	// nothing
 	break;
     default:
@@ -595,22 +536,6 @@ const struct expression *expr_trunc(const struct expression *op,
     return e;
 }
 
-const struct expression *expr_array_size(const struct expression *array)
-{
-    struct expression *expr = expr_new(EXPR_ARRAY_SIZE);
-    if (!type_is_array(array->type)) {
-	error("size operator can only be applied on arrays\n");
-
-	expr->type = type_generic;
-	return expr;
-    }
-
-    expr->type = type_long;
-    expr->array = array;
-    expr->codegen = &expr_cg_array_size;
-    return expr;
-}
-
 const struct expression *expr_unary(char c, const struct expression *e)
 {
     switch (c) {
@@ -631,4 +556,47 @@ const struct expression *expr_generic(void)
     struct expression *expr = expr_new(EXPR_GENERIC);
     expr->type = type_generic;
     return expr;
+}
+
+const struct expression *expr_sizeof_expr(const struct expression *array)
+{
+    struct expression *expr = expr_new(EXPR_SIZEOF);
+    if (!type_is_array(array->type)) {
+	error("size operator can only be applied on arrays\n");
+
+	expr->type = type_generic;
+	return expr;
+    }
+
+    expr->type = type_long;
+    expr->array = array;
+    expr->codegen = &expr_cg_sizeof;
+    return expr;
+}
+
+
+const struct expression *expr_sizeof_typename(const struct type *type)
+{
+    return expr_generic();
+}
+
+const struct expression *
+expr_struct_access(const struct expression *struct_,
+                   const char *field_name)
+{
+    return expr_generic();
+}
+
+
+const struct expression *
+expr_struct_deref(const struct expression *struct_,
+                  const char *field_name)
+{
+    return expr_generic();
+}
+
+const struct expression *
+expr_list(const struct expression *expr_list, const struct expression *expr)
+{
+    return expr_generic();
 }

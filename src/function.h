@@ -1,9 +1,9 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
 
-#include "symbol.h"
-#include "statement.h"
 #include "module.h"
+#include "symbol/symbol.h"
+#include "statement/statement.h"
 
 struct function {
 	struct symbol *name_s;

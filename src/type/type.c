@@ -1,9 +1,10 @@
 #include <stdio.h>
+
 #include "type.h"
-#include "list.h"
-#include "symbol.h"
-#include "error.h"
-#include "expression.h"
+#include "../util/list.h"
+#include "../symbol/symbol.h"
+#include "../error/error.h"
+#include "../expression/expression.h"
 
 #define DEFINE_TYPE(ty)				\
     const struct type* type_##ty;		\
@@ -69,6 +70,7 @@ static size_t type_size__[] = {
  *  it encounters a declarator
  */
 const struct type *last_type_name = NULL;
+
 const struct type *last_function_return_type;
 
 /***************************************************/
@@ -88,6 +90,9 @@ static void type_init(void)
     
     INIT_TYPE(float, FLOAT);
     INIT_TYPE(void, VOID);
+
+    last_type_name = type_generic;
+    last_function_return_type = type_generic;
 }
 
 /***************************************************/
@@ -171,11 +176,11 @@ static const char *str_expression_size(const struct expression *expr)
     char *str = "";
     if (expr->expression_type == EXPR_CONSTANT) {
 	if (expr->type == type_int) {
-	    asprintf(&str, "%d x ", expr->cst->integer.intv.signed_);
+	    asprintf(&str, "%d x ", expr->constant->integer.intv.signed_);
 	}
 
 	if (expr->type == type_long) {
-	    asprintf(&str, "%ld x ", expr->cst->integer.longv.signed_);
+	    asprintf(&str, "%ld x ", expr->constant->integer.longv.signed_);
 	}
     }
     if (expr->expression_type == EXPR_SYMBOL) {
@@ -334,4 +339,17 @@ const struct expression *type_array_size(const struct type *ty)
 {
     assert(type_is_array(ty));
     return ty->array_type.array_size;
+}
+
+
+const struct type *type_get(const char *type_name)
+{
+    internal_warning("type_get not implemented\n");
+    return type_generic;
+}
+
+const struct type *type_get_pointer_type(const struct type *type)
+{
+    internal_warning("type_get_pointer_type not implemented\n");
+    return type_generic;
 }

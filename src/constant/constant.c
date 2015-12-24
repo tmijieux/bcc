@@ -1,9 +1,12 @@
+#include <string.h>
 #include "constant.h"
-#include "type.h"
+#include "string_literal.h"
+#include "../type/type.h"
+#include "../error/error.h"
 
 static struct constant *constant_new(void)
 {
-    return calloc(sizeof*cst, 1);
+    return calloc(sizeof*constant_new, 1);
 }
 
 static struct constant *constant_str_integer(const char *string)
@@ -14,7 +17,7 @@ static struct constant *constant_str_integer(const char *string)
     value = strtol(string, NULL, 0);
     cst = constant_new();
     cst->type = type_long;
-    cst->integer->longv.signed_ = value;
+    cst->integer.longv.signed_ = value;
     
     return cst;
 }
@@ -36,12 +39,42 @@ struct constant *constant_dec_integer(const char *string)
 
 struct constant *constant_string_literal(const char *string)
 {
+    struct constant *cst = NULL;
+    struct literal *lit = NULL;
     char *str = strdup(string);
 
     const struct type *char_type = type_get("char");
+    cst = constant_new();
     cst->type = type_get_pointer_type(char_type);
-    
-    struct constant *cst;
-    cst->stringv = str;
+    lit = string_get_or_create_literal(str);
+    cst->stringv = lit->value;
     return cst;
+}
+
+struct constant *constant_integer_long(long integer)
+{
+    struct constant *cst = NULL;
+
+    cst = constant_new();
+    cst->type = type_long;
+    cst->integer.longv.signed_ = integer;
+    return cst;
+}
+
+
+struct constant *constant_integer_int(int integer)
+{
+    struct constant *cst = NULL;
+
+    cst = constant_new();
+    cst->type = type_long;
+    cst->integer.intv.signed_ = integer;
+    return cst;
+}
+
+
+bool constant_is_zero(const struct constant *cst)
+{
+    internal_warning("constant_is_zero not implemented");
+    return true;
 }

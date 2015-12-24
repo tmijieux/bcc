@@ -6,12 +6,14 @@
 #include <assert.h>
 
 #include "expression.h"
-#include "symbol.h"
-#include "type.h"
-#include "error.h"
-#include "program.h"
-#include "codegen.h"
 #include "expression_codegen.h"
+
+#include "../program.h"
+#include "../codegen.h"
+
+#include "../symbol/symbol.h"
+#include "../type/type.h"
+#include "../error/error.h"
 
 static const char *
 build_cmp_op(const struct type *t, const char *prefix)
@@ -146,153 +148,6 @@ void expr_cg_xoperation(struct expression *e)
 
 #undef expr_cg_xoperation_case
 
-void expr_cg_map(struct expression *e)
-{
-    char *syname, *rettab;
-
-    expr_cg(e->fun);
-    expr_cg(e->array);
-
-    const char *funtypestr = type_cg(e->fun->type);
-    const char *paramarraytypestr = type_cg(e->array->type);
-    const char *retarraytypestr = type_cg(e->type);
-
-    char *reg[6];
-    new_registers(6, reg);
-
-    int d1, d2;
-    d1 = prgm_get_unique_id();
-    d2 = prgm_get_unique_id();
-
-    // RETURN ARRAY:
-    asprintf(&rettab, "map%u", d1);
-
-    // printf("type map ret %s\n\n\n\n\n", type_printable(e->type));
-    struct symbol *rettab_symb = symbol_new(rettab, e->type);
-    rettab_symb->symbol_type = SYM_VARIABLE;
-    rettab_symb->suffix = "mapcg";
-    symb_cg(rettab_symb);
-
-    // MAP ARGS:
-    asprintf(&syname, "mapcont%u", d2);
-
-    uint64_t mpc =                              // map call type
-        (type_size(e->array->type->array_type.values) == 4 ? 0L : 1L)
-        + 2 * (type_size(e->type->array_type.values) == 4 ? 0L : 1L);
-
-    char *mapconttypestr;
-    asprintf(&mapconttypestr, "{i64, %s, %s, %s}",
-             paramarraytypestr, retarraytypestr, funtypestr);
-
-    char *mapcont_code;
-    asprintf(&mapcont_code, "%%%s.mapcg = alloca %s\n"  // struct mapcont
-             "%s = getelementptr %s* %%%s.mapcg, i64 0, i32 0\n"
-             "store i64 %ld, i64* %s\n" // set map_call_type
-             "%s" "%s = getelementptr %s* %%%s.mapcg, i64 0, i32 1\n"
-             "store %s %s, %s* %s\n"    // set param array
-             "%s = getelementptr %s* %%%s.mapcg, i64 0, i32 2\n"
-             "%s = load %s* %%%s.mapcg\n"
-             "store %s %s, %s* %s\n"// set return array
-             "%s = getelementptr %s* %%%s.mapcg, i64 0, i32 3\n"
-             "store %s @%s, %s* %s\n"   // set method
-             "%s = bitcast %s* %%%s.mapcg to i8*\n"
-             "call void @map(i8* %s)\n",        // call map
-             syname, mapconttypestr,    // struct mapcont
-             reg[0], mapconttypestr,
-             syname, mpc, reg[0],       // set map_call_type
-             e->array->vcode, reg[1], mapconttypestr, syname,
-             paramarraytypestr, e->array->vreg,
-             paramarraytypestr, reg[1], // set param array
-             reg[2], mapconttypestr, syname, reg[4],
-             retarraytypestr, rettab, retarraytypestr, reg[4],
-             retarraytypestr, reg[2],   // set return array
-             reg[3], mapconttypestr, syname, funtypestr,
-             e->fun->symbol->name, funtypestr, reg[3],  // set method
-             reg[5], mapconttypestr, syname, reg[5]);   // call map
-
-    symb_cg(rettab_symb);
-    asprintf(&mapcont_code, "%s%s%s", rettab_symb->variable.alloc_code,
-             rettab_symb->variable.init_code, mapcont_code);
-    e->vcode = mapcont_code;
-    e->vreg = reg[4];
-}
-
-void expr_cg_reduce(struct expression *e)
-{
-    char *syname, *ret;
-
-    expr_cg(e->fun);
-    expr_cg(e->array);
-
-    const char *funtypestr = type_cg(e->fun->type);
-    const char *paramarraytypestr = type_cg(e->array->type);
-    const char *rettypestr = type_cg(e->type);
-
-    char *reg[6];
-    new_registers(6, reg);
-    int d1, d2;
-    d1 = prgm_get_unique_id();
-    d2 = prgm_get_unique_id();
-
-    // RETURN ARRAY:
-    asprintf(&ret, "redret%u", d1);
-    struct symbol *ret_symb = symbol_new(ret, e->type);
-    ret_symb->symbol_type = SYM_VARIABLE;
-    ret_symb->suffix = "redcg";
-    symb_cg(ret_symb);
-
-    // MAP ARGS:
-    asprintf(&syname, "redcont%u", d2);
-
-    char *redconttypestr;
-    asprintf(&redconttypestr, "{i64, %s, %s*, %s}",
-             paramarraytypestr, rettypestr, funtypestr);
-
-    char *redcont_code;
-    asprintf(&redcont_code, "%%%s.redcg = alloca %s\n"  // struct redcont
-             "%s = getelementptr %s* %%%s.redcg,"
-             " i64 0, i32 0\n" "store i64 %ld, i64* %s\n"// set red_call_type
-             "%s" "%s = getelementptr %s* %%%s.redcg,"
-             " i64 0, i32 1\n" "store %s %s, %s* %s\n"  // set param array
-             "%s = getelementptr %s* %%%s.redcg, i64 0, i32 2\n"
-             "store %s* %%%s.redcg, %s** %s\n"  // set return value
-             "%s = getelementptr %s* %%%s.redcg, i64 0, i32 3\n"
-             "store %s @%s, %s* %s\n"   // set method
-             "%s = bitcast %s* %%%s.redcg to i8*\n"
-             "call void @reduce(i8* %s)\n"      // call red
-             "%s = load %s* %%%s.redcg\n",      //retval
-             syname, redconttypestr,    // struct redcont
-             reg[0], redconttypestr, syname,
-             type_size(e->array->type->array_type.values) == 4 ? 0L : 1L,
-             reg[0],    // set red_call_type
-             e->array->vcode, reg[1], redconttypestr, syname,
-             paramarraytypestr, e->array->vreg,
-             paramarraytypestr, reg[1], // set param array
-             reg[2], redconttypestr, syname, rettypestr,
-             ret, rettypestr, reg[2],   // set return value
-             reg[3], redconttypestr, syname, funtypestr,
-             e->fun->symbol->name, funtypestr, reg[3],  // set method
-             reg[5], redconttypestr, syname, reg[5],    // call red
-             reg[4], rettypestr, ret);  //retval
-
-    asprintf(&redcont_code, "%s%s%s", ret_symb->variable.alloc_code,
-             ret_symb->variable.init_code, redcont_code);
-
-    e->vcode = redcont_code;
-    e->vreg = reg[4];
-}
-
-void expr_cg_array_size(struct expression *e)
-{
-    expr_cg(e->array);
-    e->areg = new_register();
-    e->vreg = new_register();
-    asprintf(&e->acode, "%s %s = getelementptr %s %s, i64 0, i32 0\n",
-             e->array->vcode, e->areg, type_cg(e->array->type),
-             e->array->vreg);
-    asprintf(&e->vcode, "%s %s = load i64* %s\n", e->acode, e->vreg, e->areg);
-}
-
 void expr_cg_symbol(struct expression *e)
 {
     e->vreg = new_register();
@@ -304,13 +159,15 @@ void expr_cg_constant(struct expression *e)
 {
     e->vreg = new_register();
     if (e->type == type_int)
-        asprintf(&e->vcode, "%s = add i32 %d, 0\n", e->vreg, e->constanti);
+        asprintf(&e->vcode, "%s = add i32 %d, 0\n", e->vreg,
+                 e->constant->integer.intv.signed_);
     else if (e->type == type_float) {
-        double tmp = (double) e->constantf;
+        double tmp = (double) e->constant->floatv;
         asprintf(&e->vcode, "%s = fadd float %#018lx, 0.\n",
                  e->vreg, *(uint64_t *) (&tmp));
     } else if (e->type == type_long)
-        asprintf(&e->vcode, "%s = add i64 %ld, 0\n", e->vreg, e->constantl);
+        asprintf(&e->vcode, "%s = add i64 %ld, 0\n", e->vreg,
+                 e->constant->integer.longv.signed_);
 }
 
 void expr_cg_funcall(struct expression *e)
@@ -340,7 +197,7 @@ void expr_cg_funcall(struct expression *e)
     asprintf(&e->vcode, "%s%s", params_code, call_code);
 }
 
-void expr_cg_postfix(struct expression *e)
+void expr_cg_array(struct expression *e)
 {
     expr_cg(e->array);
     expr_cg(e->index);
@@ -402,6 +259,17 @@ void expr_cg_fpsicast(struct expression *e)
              e->operand->vcode, e->vreg, cast_instr,
              type_cg(e->operand->type), e->operand->vreg,
              type_cg(e->target_type));
+}
+
+void expr_cg_sizeof(struct expression *e)
+{
+    expr_cg(e->array);
+    e->areg = new_register();
+    e->vreg = new_register();
+    asprintf(&e->acode, "%s %s = getelementptr %s %s, i64 0, i32 0\n",
+	     e->array->vcode, e->areg, type_cg(e->array->type),
+	     e->array->vreg);
+    asprintf(&e->vcode, "%s %s = load i64* %s\n", e->acode, e->vreg, e->areg);
 }
 
 static void

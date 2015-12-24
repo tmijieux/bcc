@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "error.h"
-#include "function.h"
-#include "symbol_table.h"
 #include "program.h"
 #include "module.h"
+#include "function.h"
+
+#include "symbol/symbol_table.h"
+#include "error/error.h"
 
 extern void yyparse();
 

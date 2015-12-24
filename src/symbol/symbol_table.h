@@ -2,7 +2,7 @@
 #define SYMBOL_TABLE_H
 
 #include "symbol.h"
-#include "list.h"
+#include "../util/list.h"
 
 void st_init(void);
 void st_pop(void);

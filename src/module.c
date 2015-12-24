@@ -4,13 +4,15 @@
 
 #include <stdio.h>
 #include <string.h>
+
 #include "module.h"
 #include "function.h"
-#include "symbol.h"
-#include "hash_table.h"
 #include "codegen.h"
-#include "string_literal.h"
-#include "error.h"
+
+#include "symbol/symbol.h"
+#include "constant/string_literal.h"
+#include "error/error.h"
+#include "util/hash_table.h"
 
 struct module {
     struct hash_table *funtable;
@@ -81,18 +83,6 @@ static int module_add_default_prototype(struct module *m)
     param->variable.is_parameter = true;
     fun = function_declare(symbol_new("GC_malloc", type_generic),
                            list_new(LI_ELEM, param, NULL), m);
-    module_add_prototype(m, fun);
-
-    param = symbol_new("map_controller", type_generic);
-    param->variable.is_parameter = true;
-    fun = function_declare(symbol_new("map", type_void), 
-                           list_new(LI_ELEM, param, NULL), m); // arguments
-    module_add_prototype(m, fun);
-
-    param = symbol_new("reduce_controller", type_generic);
-    param->variable.is_parameter = true;
-    fun = function_declare(symbol_new("reduce", type_void), 
-                           list_new(LI_ELEM, param, NULL), m); // arguments
     module_add_prototype(m, fun);
 
     return 0;

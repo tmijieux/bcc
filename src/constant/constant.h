@@ -2,6 +2,7 @@
 #define CONSTANT_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 enum constant_type {
     CONSTANT_CHAR,
@@ -51,5 +52,8 @@ struct constant *constant_hex_integer(const char *string);
 struct constant *constant_oct_integer(const char *string);
 struct constant *constant_dec_integer(const char *string);
 struct constant *constant_string_literal(const char *string);
+struct constant *constant_integer_long(long integer);
+struct constant *constant_integer_int(int integer);
+bool constant_is_zero(const struct constant *);
 
 #endif //CONSTANT_H

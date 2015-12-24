@@ -21,14 +21,14 @@ enum type_type {
     TYPE_FUNCTION,	// cannot be applied on a variable
 };
 
-#include "expression.h"
+#include "../expression/expression.h"
 
 struct type_array {
     const struct type *values;
     const struct expression *array_size;
 };
 
-#include "util/list.h"
+#include "../util/list.h"
 
 #include <stdint.h>
 

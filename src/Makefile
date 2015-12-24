@@ -6,25 +6,29 @@ CC=cc
 TARGET=bcc
 SRC=	grammar.c \
 	scanner.c \
-	error.c \
+	error/error.c \
 	main.c \
 	option.c \
 	module.c \
 	function.c \
 	program.c \
-	symbol_table.c \
-	type.c \
-	type_codegen.c \
-	symbol.c \
-	symbol_codegen.c \
-	expression.c \
-	expression_codegen.c \
-	statement.c \
-	statement_codegen.c \
-	string_literal.c \
-	constant.c \
-	specifier.c \
-	initializer.c \
+	symbol/symbol_table.c \
+	type/type.c \
+	type/type_codegen.c \
+	type/specifier.c \
+	type/pointer.c \
+	type/enumerator.c \
+	type/declarator.c \
+	type/struct.c \
+	symbol/symbol.c \
+	symbol/symbol_codegen.c \
+	expression/expression.c \
+	expression/expression_codegen.c \
+	statement/statement.c \
+	statement/statement_codegen.c \
+	constant/string_literal.c \
+	constant/constant.c \
+	misc/initializer.c \
 
 ifndef NOGC
 CFLAGS+=-Dmalloc=gcmalloc -Dfree=gcfree \
@@ -56,7 +60,7 @@ clean:
 	make -C util/ clean
 
 fullclean: clean
-	$(RM) uuc -f
+	$(RM) $(TARGET)
 
 edit: 
 	emacs -mm *.c *.h *.y *.l &

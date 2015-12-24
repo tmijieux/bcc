@@ -1,11 +1,12 @@
 #ifndef CODEGEN_H
 #define CODEGEN_H
 
-#include "list.h"
-#include "type.h"
-#include "expression.h"
-#include "statement.h"
 #include "function.h"
+
+#include "expression/expression.h"
+#include "statement/statement.h"
+#include "type/type.h"
+#include "util/list.h"
 
 const char *type_cg(const struct type *);
 const char *type_cg_arglist(const struct list *);	// list of symbols

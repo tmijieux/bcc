@@ -6,12 +6,15 @@
 #endif
 #include "color.h"
 
+#include "../module.h"
+
 void warning(const char *format, ...);
+void internal_warning(const char *format, ...);
 void error(const char *format, ...);
 void fatal_error(const char *format, ...);
 void internal_error(const char *format, ...);
 int error_count(void);
-int yyerror(const char *s);
+int yyerror(struct module *m, const char *s);
 void debugi(const char *format, ...);
 
 #ifndef NDEBUG

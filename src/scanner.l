@@ -1,21 +1,20 @@
 %{
 /* Jutta Degener, 1995  */
 #include <stdio.h>
-    
 #include "util/string2.h"
-    
-#include "type.h"
-#include "symbol.h"
+
 #include "function.h"
-#include "expression.h"
-#include "statement.h"
-#include "constant.h"
-    
-#include "grammar.tab.h"
-    
+#include "type/type.h"
+#include "symbol/symbol.h"
+#include "expression/expression.h"
+#include "statement/statement.h"
+#include "constant/constant.h"
+#include "error/error.h"
+
 #include "scanner.h"
-#include "error.h"
-    
+#include "grammar.tab.h"
+
+
 #define BUFSIZE 1024
     
 static void count(void);
@@ -33,6 +32,7 @@ H                       [a-fA-F0-9]
 E                       [Ee][+-]?{D}+
 FS                      (f|F|l|L)
 IS                      (u|U|l|L)*
+%option yylineno
 
 %%
 "/*"                    { comment(); }
@@ -206,7 +206,7 @@ static void count(void)
 
     old_yytext_index = (old_yytext_index+1)%YYOLDTEXT_SIZE;
     old_yytext[old_yytext_index] = strstrip(yytext);
-    ECHO;
+//    ECHO;
 }
 
 static int check_type(void)
