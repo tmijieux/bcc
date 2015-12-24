@@ -6,10 +6,10 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "scanner.h"
-#include "color.h"
 #include "error.h"
-#include "util/string2.h"
+#include "../scanner.h"
+#include "../util/color.h"
+#include "../util/string2.h"
 
 extern int yycolno, yylineno;
 extern char *yytext, *yyfilename;

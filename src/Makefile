@@ -40,10 +40,14 @@ all: $(TARGET)
 
 OBJ=$(patsubst %.c,%.o,$(SRC))
 
-all: 
+-include $(OBJS: .o=.d)
 
 $(TARGET): $(OBJ) libutil.a
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $^ -o $@
+	$(CC) $(CLFAGS) -MM $^ -o $*.d
 
 grammar.c:grammar.y
 	$(YACC) -d -o $@ --defines=grammar.tab.h $^
@@ -56,7 +60,7 @@ libutil.a:  util
 	cp  util/libutil.a libutil.a
 
 clean:
-	$(RM) $(OBJ) grammar.c scanner.c grammar.tab.h *~
+	$(RM) $(OBJ) grammar.c scanner.c grammar.tab.h *~ *.d
 	make -C util/ clean
 
 fullclean: clean

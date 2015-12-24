@@ -1,7 +1,8 @@
 #include <stdio.h>
-#include "list.h"
+
 #include "program.h"
-#include "error.h"
+#include "util/list.h"
+#include "error/error.h"
 
 unsigned int prgm_get_unique_id(void)
 {

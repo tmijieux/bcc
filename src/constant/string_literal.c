@@ -3,11 +3,12 @@
 #endif
 
 #include <stdio.h>
+#include <string.h>
+
 #include "string_literal.h"
-#include "hash_table.h"
-#include "string.h"
-#include "error.h"
-#include "string2.h"
+#include "../util/string2.h"
+#include "../util/hash_table.h"
+#include "../error/error.h"
 
 static int str_count = 0;
 struct hash_table *lits;

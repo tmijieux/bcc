@@ -4,6 +4,9 @@
 *.obj
 *.elf
 
+# Dependency files
+*.d
+
 # Precompiled Headers
 *.gch
 *.pch
@@ -45,3 +48,5 @@ grammar.tab.h
 src/bcc
 bcc
 
+#test dir
+test/

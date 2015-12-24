@@ -4,7 +4,7 @@
 #ifndef ERROR_OUTPUT
 #define ERROR_OUTPUT stderr
 #endif
-#include "color.h"
+#include "../util/color.h"
 
 #include "../module.h"
 
