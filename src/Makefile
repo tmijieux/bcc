@@ -39,8 +39,9 @@ endif
 all: $(TARGET)
 
 OBJ=$(patsubst %.c,%.o,$(SRC))
+#DEP=$(patsubst %.c,%.d,$(SRC))
 
--include $(OBJS: .o=.d)
+-include $(DEP)
 
 $(TARGET): $(OBJ) libutil.a
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)

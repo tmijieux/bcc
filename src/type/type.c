@@ -29,6 +29,7 @@ DEFINE_TYPE(int);
 DEFINE_TYPE(long);
 
 DEFINE_TYPE(float);
+DEFINE_TYPE(double);
 DEFINE_TYPE(void);
 
 static int type_precision__[] = {
@@ -44,7 +45,8 @@ static int type_precision__[] = {
     [TYPE_INT] = 30,
     [TYPE_LONG] = 40,
     
-    [TYPE_FLOAT] = 50
+    [TYPE_FLOAT] = 50,
+    [TYPE_DOUBLE] = 60
 };
 
 static size_t type_size__[] = {
@@ -58,6 +60,7 @@ static size_t type_size__[] = {
     [TYPE_LONG] = 8,
     
     [TYPE_FLOAT] = 4,
+    [TYPE_DOUBLE] = 8,
     [TYPE_ARRAY] = 8,
 
     [TYPE_FUNCTION] = 8,
@@ -71,7 +74,6 @@ static struct hash_table *type_table;
  *  it encounters a declarator
  */
 const struct type *last_type_name = NULL;
-
 const struct type *last_function_return_type;
 
 /***************************************************/
@@ -91,6 +93,7 @@ static void type_init(void)
     INIT_TYPE(long, LONG);
     
     INIT_TYPE(float, FLOAT);
+    INIT_TYPE(double, DOUBLE);
     INIT_TYPE(void, VOID);
 
     last_type_name = type_generic;
@@ -162,7 +165,7 @@ const struct type *type_new_array_type(const struct type *values,
 }
 
 const struct type *	// list of symbols (should be type)
-type_new_function_type(const struct type *return_value, struct list *argv)
+type_new_function_type(const struct type *return_value, const struct list *argv)
 {
     struct type *ty = type_new(TYPE_FUNCTION);
     ty->function_type.return_value = return_value;
@@ -171,7 +174,7 @@ type_new_function_type(const struct type *return_value, struct list *argv)
     return ty;
 }
 
-static const char *type_arglist(struct list *l);
+static const char *type_arglist(const struct list *l);
 
 static const char *str_expression_size(const struct expression *expr)
 {
@@ -265,7 +268,7 @@ const char *type_printable_aux(const struct type *t, char *printable)
     return printable;    
 }
 
-static const char *type_arglist(struct list *l)
+static const char *type_arglist(const struct list *l)
 {
     char *arglist = "";
     int s = list_size(l);
@@ -281,7 +284,7 @@ bool type_equal(const struct type *t1, const struct type *t2)
 {
     if (t1 == t2)
 	return true;
-    
+   
     if (t1->type != t2->type) {
 	if (t1 == type_generic || t2 == type_generic)
 	    return true;
@@ -292,8 +295,8 @@ bool type_equal(const struct type *t1, const struct type *t2)
 	if (!type_equal(t1->function_type.return_value,
 			t2->function_type.return_value))
 	    return false;
-	struct list *l1 = t1->function_type.argv;
-	struct list *l2 = t2->function_type.argv;
+	const struct list *l1 = t1->function_type.argv;
+	const struct list *l2 = t2->function_type.argv;
 	unsigned int s;
 	if ((s = list_size(l1)) != list_size(l2))
 	    return false;

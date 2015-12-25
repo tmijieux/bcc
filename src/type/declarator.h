@@ -49,8 +49,12 @@ int
 declarator_process_list(struct list *declaration_specifiers,
                         struct list *declarator,
                         struct list **ret_list);
-
 const struct type *
 declarator_type(const struct declarator *de, const struct type *base_type);
+const struct list *
+declarator_deepest_param_list(const struct declarator *de);
+int declarator_process_param_list(
+    struct list *declarator_list, struct list **ret_list);
+    
 
 #endif //DECLARATOR_H

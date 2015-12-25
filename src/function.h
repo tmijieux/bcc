@@ -26,7 +26,7 @@ int fun_set_body(struct function *fun,
 		 const struct statement *compound_statement);	// = body
 void fun_add_allocas(struct function *fun, struct symbol *sym);
 struct symbol *
-function_declare(struct symbol *declarator, struct list *param_list,
-                 struct module *m);
+function_declare(struct symbol *declarator,
+                 const struct list *param_list, struct module *m);
 
 #endif	//FUNCTION_H

@@ -33,7 +33,7 @@ int process_declarator(struct list *declaration_specifiers,
 struct list *declarator,
 struct list **ret_list);
 %}
-/*          reentrant : 
+/*          %reentrant : 
             %pure-parser
             %locations
             %defines
@@ -121,7 +121,8 @@ struct list **ret_list);
 %type <declarator> struct_declarator
 %type <declarator> abstract_declarator
 %type <declarator> parameter_declaration
-
+%type <function> function_definition
+%type <symbol> function_definition_header
 %type <initializer> initializer
 %type <type> type_name
 
@@ -443,9 +444,10 @@ type_qualifier_list
 ;
 
 parameter_type_list
-: parameter_list { $$ = $1 };
-| parameter_list ',' TOKEN_ELLIPSIS { $$ = $1;
-     internal_warning("param_list ellipsis "); }
+: parameter_list { declarator_process_param_list($1, &$$); }
+| parameter_list ',' TOKEN_ELLIPSIS
+{ declarator_process_param_list($1, &$$);
+  internal_warning("param_list ellipsis not handled "); }
 ;
 
 parameter_list
@@ -588,13 +590,27 @@ external_declaration
 
 function_definition
 : function_definition_header compound_statement
+{ $$ = module_get_or_create_function(m, $1);
+    fun_set_body($$, $2);
+ }
 ;
 
 function_definition_header
-: declaration_specifiers declarator declaration_list  {  }
-| declaration_specifiers declarator {  }
-| declarator declaration_list {  }
-| declarator {  }
+: declaration_specifiers declarator declaration_list
+ {  internal_error("old style function declaration not supported"); }
+| declaration_specifiers declarator {
+    struct symbol *sy = symbol_new(
+        declarator_get_name($2),
+        declarator_type($2, specifier_list_get_type($1)));
+    $$ = function_declare(sy, declarator_deepest_param_list($2), m);
+ }
+| declarator declaration_list
+ {  internal_error("old style function declaration not supported"); }
+| declarator {
+    struct symbol *sy = symbol_new(declarator_get_name($1),
+                                   declarator_type($1, type_int));
+    $$ = function_declare(sy, declarator_deepest_param_list($1), m);
+}
 ;
 
 %%

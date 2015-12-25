@@ -35,7 +35,6 @@ struct declarator {
     struct declarator *next;
 };
 
-
 static struct declarator *declarator_new(enum declarator_type dt,
                                          struct declarator *next)
 {
@@ -187,6 +186,26 @@ int declarator_process_list(struct list *declaration_specifiers,
 }
 
 
+static void *to_symbol_param__(void *list_elem)
+{
+    struct declarator *decl = list_elem;
+
+    assert(DECLARATOR_SPECIFIER == decl->declarator_type);
+    struct symbol *sym = symbol_new(declarator_get_name(decl),
+                                    declarator_type(decl, NULL));
+
+    sym->symbol_type = SYM_VARIABLE;
+    sym->variable.is_parameter = true;
+    
+    return sym;
+}
+
+int declarator_process_param_list(struct list *declarator_list,
+                                  struct list **ret_list)
+{
+    *ret_list = list_map(declarator_list, &to_symbol_param__);
+    return 0;
+}
 
 const struct type *
 declarator_type(const struct declarator *de, const struct type *base_type)
@@ -224,6 +243,12 @@ declarator_type(const struct declarator *de, const struct type *base_type)
                          "currently not supported\n");
          return type_generic;
         break;
+        
+    case DECLARATOR_SPECIFIER:
+        return declarator_type(
+            de->next,
+            specifier_list_get_type(de->value.declaration_specifiers));
+        break;
 
     default:
         internal_warning("declarator_type: this case is not implemented\n");
@@ -231,4 +256,25 @@ declarator_type(const struct declarator *de, const struct type *base_type)
     }
 
     return type_generic;
+}
+
+const struct list *
+declarator_deepest_param_list(const struct declarator *de)
+{
+    if (NULL == de->next) {
+        if (DECLARATOR_FUNCTION == de->declarator_type)
+            return de->value.parameter_list;
+        else
+            return NULL;
+    } else {
+        const struct list *l = declarator_deepest_param_list(de->next);
+        if (NULL == l) {
+            if (DECLARATOR_FUNCTION == de->declarator_type)
+                return de->value.parameter_list;
+            else
+                return NULL;
+        } else {
+            return l;
+        }
+    }
 }

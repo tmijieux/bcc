@@ -27,11 +27,11 @@ struct symbol_table {
  *  parameter of function definition to insert them
  *  once the function compound statement really starts
  */
-static struct list *function_parameters = NULL;
+static const struct list *function_parameters = NULL;
 
 static void check_variable_use(const struct hash_table *);
 
-void st_set_parameters(struct list *l)
+void st_set_parameters(const struct list *l)
 {
     function_parameters = l;
     if (st->level == 0)	{ // this has no meaning inside a function

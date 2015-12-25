@@ -18,17 +18,17 @@ char *yyfilename = NULL;
 
 int main(int argc, char *argv[])
 {
-    const struct type *arrt = type_new_array_type(
-        type_int,
-        expr_constant(constant_integer_int(0)));
+    /* const struct type *arrt = type_new_array_type( */
+    /*     type_int, */
+    /*     expr_constant(constant_integer_int(0))); */
 
-    arrt = type_new_array_type(type_new_function_type(type_float, list_new(0)),
-                               expr_constant(constant_integer_int(10)));
-    arrt = type_new_array_type(arrt,
-                               expr_constant(constant_integer_int(2)));
+    /* arrt = type_new_array_type(type_new_function_type(type_float, list_new(0)), */
+    /*                            expr_constant(constant_integer_int(10))); */
+    /* arrt = type_new_array_type(arrt, */
+    /*                            expr_constant(constant_integer_int(2))); */
     
-    printf("%s\n", type_printable(arrt));
-    exit(EXIT_SUCCESS);
+    /* printf("%s\n", type_printable(arrt)); */
+    /* exit(EXIT_SUCCESS); */
     
     
     struct bcc_option bopt ;//= { 0 };

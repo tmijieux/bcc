@@ -13,6 +13,6 @@ int st_search(const char *name, struct symbol **sy_ret);
 void st_pop(void);
 void st_push(void);
 
-void st_set_parameters(struct list *l);
+void st_set_parameters(const struct list *l);
 
 #endif	//SYMBOL_TABLE_H
