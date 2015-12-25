@@ -12,6 +12,9 @@
 struct symbol *symbol_new(const char *name, const struct type *t)
 {
     struct symbol *sy = calloc(sizeof *sy, 1);
+
+    assert(NULL != t);
+
     sy->name = name;
     sy->type = t;
     sy->variable = (struct symbol_variable) {0};

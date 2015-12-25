@@ -174,6 +174,20 @@ type_new_function_type(const struct type *return_value, const struct list *argv)
     return ty;
 }
 
+const struct type *	// list of symbols (should be type)
+type_new_pointer_type(const struct pointer *ptr, const struct type *pointed_value)
+{
+    assert (NULL != ptr);
+
+    const struct type *ty = pointed_value;
+    do {
+        struct type *tmp = type_new(TYPE_POINTER);
+        tmp->pointer_type.pointed_type = ty;
+        ty = tmp;
+    } while (NULL != (ptr = pointer_get_sub_pointer(ptr)));
+    return ty;
+}
+
 static const char *type_arglist(const struct list *l);
 
 static const char *str_expression_size(const struct expression *expr)
@@ -217,16 +231,27 @@ const char *type_printable(const struct type *t)
     case TYPE_BOOL:
 	printable = "bool";
 	break;
+    case TYPE_CHAR:
+	printable = "char";
+	break;
+
+    case TYPE_SHORT:
+	printable = "short";
+	break;
     case TYPE_INT:
 	printable = "int";
-	break;
-    case TYPE_FLOAT:
-	printable = "float";
 	break;
     case TYPE_LONG:
 	printable = "long";
 	break;
+
+    case TYPE_FLOAT:
+	printable = "float";
 	break;
+    case TYPE_DOUBLE:
+	printable = "double";
+	break;
+
     case TYPE_ARRAY:
     case TYPE_FUNCTION:
     case TYPE_POINTER:
@@ -235,7 +260,6 @@ const char *type_printable(const struct type *t)
     default:
 	break;
     }
-
     return printable;
 }
 
@@ -245,7 +269,6 @@ const char *type_printable_aux(const struct type *t, char *printable)
     case TYPE_ARRAY:
 	asprintf(&printable, "%s[%s]", printable,
                  str_expression_size(t->array_type.array_size));
-        
         return type_printable_aux(type_array_values(t), printable);
 	break;
     case TYPE_FUNCTION:
@@ -255,7 +278,6 @@ const char *type_printable_aux(const struct type *t, char *printable)
 	break;
     case TYPE_POINTER:
         asprintf(&printable, "*%s", printable);
-        
         return type_printable_aux(type_pointer_star(t), printable);
         break;
         
@@ -383,8 +405,8 @@ const struct type *type_pointer_star(const struct type *ty)
 
 const struct type *type_get(const char *type_name)
 {
-    const struct type * type;
-    if (ht_get_entry(type_table, type_name, &type) != 0)
+    const struct type * type = NULL;
+    if (ht_get_entry(type_table, type_name, &type) == 0)
         return type;
     return type_generic;
 }
@@ -392,14 +414,32 @@ const struct type *type_get(const char *type_name)
 const struct type *type_get_pointer_type(const struct pointer *ptr,
                                          const struct type *type)
 {
-    internal_warning("type_get_pointer_type not implemented\n");
-    return type_generic;
+    assert(NULL != ptr);
+
+    const struct type *already_existing = NULL;
+    const struct type *new =
+        type_new_pointer_type(ptr, type);
+    const char *type_key = type_printable(new);
+    if (ht_get_entry(type_table, type_key, &already_existing) == 0) {
+        new = NULL;
+        return already_existing;
+    } // else {
+    ht_add_entry(type_table, type_key, new);
+    return new;
 }
 
 const struct type *
 type_get_function_type(const struct type *return_type,
                        const struct list *type_param_list)
 {
-    internal_warning("type_get_function_type not implemented\n");
-    return type_generic;
+    const struct type *already_existing = NULL;
+    const struct type *new =
+        type_new_function_type(return_type, type_param_list);
+    const char *type_key = type_printable(new);
+    if (ht_get_entry(type_table, type_key, &already_existing) == 0) {
+        new = NULL;
+        return already_existing;
+    } // else {
+    ht_add_entry(type_table, type_key, new);
+    return new;
 }
