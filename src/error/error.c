@@ -8,6 +8,7 @@
 
 #include "error.h"
 #include "../scanner.h"
+#include "../grammar.tab.h"
 #include "../util/color.h"
 #include "../util/string2.h"
 
@@ -89,7 +90,7 @@ void debugi(const char *format, ...)
 extern const char *old_yytext[];
 extern unsigned int old_yytext_index;
 
-int yyerror(struct module *m, const char *s)
+int yyerror(const char *s)
 {
     int len;
     errc++;
@@ -103,7 +104,7 @@ int yyerror(struct module *m, const char *s)
 	 i != old_yytext_index; i = (i + 1) % YYOLDTEXT_SIZE) {
 	asprintf(&source_code, "%s%s", source_code, old_yytext[i]);
     }
-    asprintf(&source_code, "%s%s", source_code, yytext);
+//    asprintf(&source_code, "%s%s", source_code, yytext);
     len +=
 	fprintf(ERROR_OUTPUT, "%s\n",
 		strstrip(color("green", source_code))) - COLOR_LEN;

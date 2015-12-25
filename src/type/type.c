@@ -1,10 +1,11 @@
 #include <stdio.h>
 
 #include "type.h"
-#include "../util/list.h"
 #include "../symbol/symbol.h"
 #include "../error/error.h"
 #include "../expression/expression.h"
+#include "../util/list.h"
+#include "../util/hash_table.h"
 
 #define DEFINE_TYPE(ty)				\
     const struct type* type_##ty;		\
@@ -13,16 +14,16 @@
 #define INIT_TYPE(ty, TY)				\
     type_##ty = type_new(TYPE_##TY);			\
     type_##ty##_v = type_new(TYPE_##TY);		\
+    ht_add_entry(type_table, #ty, type_##ty);           \
     ((struct type*)type_##ty##_v)->is_vector = true;	\
 
 static struct type *type_new(enum type_type t);
 
 DEFINE_TYPE(undef);
 DEFINE_TYPE(generic);
-DEFINE_TYPE(string);
 
 DEFINE_TYPE(bool);
-DEFINE_TYPE(byte);
+DEFINE_TYPE(char);
 DEFINE_TYPE(short);
 DEFINE_TYPE(int);
 DEFINE_TYPE(long);
@@ -36,10 +37,9 @@ static int type_precision__[] = {
     [TYPE_VOID] = -1,
     [TYPE_ARRAY] = -1,
     [TYPE_FUNCTION] = -1,
-    [TYPE_STRING] = -1,
 
     [TYPE_BOOL] = 5,
-    [TYPE_BYTE] = 10,
+    [TYPE_CHAR] = 10,
     [TYPE_SHORT] = 20,
     [TYPE_INT] = 30,
     [TYPE_LONG] = 40,
@@ -52,7 +52,7 @@ static size_t type_size__[] = {
     [TYPE_VOID] = 0,
     
     [TYPE_BOOL] = 1,
-    [TYPE_BYTE] = 1,
+    [TYPE_CHAR] = 1,
     [TYPE_SHORT] = 2,
     [TYPE_INT] = 4,
     [TYPE_LONG] = 8,
@@ -64,6 +64,7 @@ static size_t type_size__[] = {
     [TYPE_GENERIC] = 8,
 };
 
+static struct hash_table *type_table;
 /**
  *  This variable is used to remember the last type_name that was read
  *  to allow the program to know which type_name it should apply when
@@ -78,12 +79,13 @@ const struct type *last_function_return_type;
 __attribute__ ((constructor))
 static void type_init(void)
 {
+    type_table = ht_create(0, NULL);
+    
     INIT_TYPE(undef, UNDEF);
     INIT_TYPE(generic, GENERIC);
-    INIT_TYPE(string, STRING);
 
     INIT_TYPE(bool, BOOL);
-    INIT_TYPE(byte, BYTE);
+    INIT_TYPE(char, CHAR);
     INIT_TYPE(short, SHORT);
     INIT_TYPE(int, INT);
     INIT_TYPE(long, LONG);
@@ -176,15 +178,15 @@ static const char *str_expression_size(const struct expression *expr)
     char *str = "";
     if (expr->expression_type == EXPR_CONSTANT) {
 	if (expr->type == type_int) {
-	    asprintf(&str, "%d x ", expr->constant->integer.intv.signed_);
+	    asprintf(&str, "%d", expr->constant->integer.intv.signed_);
 	}
 
 	if (expr->type == type_long) {
-	    asprintf(&str, "%ld x ", expr->constant->integer.longv.signed_);
+	    asprintf(&str, "%ld", expr->constant->integer.longv.signed_);
 	}
     }
     if (expr->expression_type == EXPR_SYMBOL) {
-	asprintf(&str, "%s x ", expr->symbol->name);
+	asprintf(&str, "%s", expr->symbol->name);
     }
     if (expr->expression_type == EXPR_UNDEF) {
 	return "undef";
@@ -192,6 +194,8 @@ static const char *str_expression_size(const struct expression *expr)
 
     return str;
 }
+
+const char *type_printable_aux(const struct type *t, char *printable);
 
 const char *type_printable(const struct type *t)
 {
@@ -219,25 +223,46 @@ const char *type_printable(const struct type *t)
     case TYPE_LONG:
 	printable = "long";
 	break;
-    case TYPE_STRING:
-	printable = "string";
 	break;
     case TYPE_ARRAY:
-	asprintf(&printable, "array<%s%s>",
-		 str_expression_size(t->array_type.array_size),
-		 type_printable(t->array_type.values));
-	break;
-
     case TYPE_FUNCTION:
-	asprintf(&printable, "function (%s) --> %s",
-		 type_arglist(t->function_type.argv),
-		 type_printable(t->function_type.return_value));
+    case TYPE_POINTER:
+        return type_printable_aux(t, "");
 	break;
     default:
 	break;
     }
 
     return printable;
+}
+
+const char *type_printable_aux(const struct type *t, char *printable)
+{
+    switch (t->type) {
+    case TYPE_ARRAY:
+	asprintf(&printable, "%s[%s]", printable,
+                 str_expression_size(t->array_type.array_size));
+        
+        return type_printable_aux(type_array_values(t), printable);
+	break;
+    case TYPE_FUNCTION:
+	asprintf(&printable, "(%s)(%s)", printable,
+                 type_arglist(t->function_type.argv));
+        return type_printable_aux(type_function_return(t), printable);
+	break;
+    case TYPE_POINTER:
+        asprintf(&printable, "*%s", printable);
+        
+        return type_printable_aux(type_pointer_star(t), printable);
+        break;
+        
+    default:
+	asprintf(&printable, "%s %s", type_printable(t), printable);
+        return printable;
+	break;
+    }
+
+    return printable;    
 }
 
 static const char *type_arglist(struct list *l)
@@ -290,14 +315,14 @@ bool type_equal(const struct type *t1, const struct type *t2)
 
 bool type_is_basic(const struct type * type)
 {
-    return (type == type_byte || type == type_short ||
+    return (type == type_char || type == type_short ||
 	    type == type_int || type == type_long || type == type_bool ||
 	    type == type_float || type == type_generic);
 }
 
 bool type_is_integer(const struct type * type)
 {
-    return (type == type_bool || type == type_byte || type == type_short ||
+    return (type == type_bool || type == type_char || type == type_short ||
 	    type == type_int || type == type_long);
 }
 
@@ -309,6 +334,11 @@ bool type_is_function(const struct type * ty)
 bool type_is_array(const struct type * ty)
 {
     return (ty->type == TYPE_ARRAY);
+}
+
+bool type_is_pointer(const struct type * ty)
+{
+    return (TYPE_POINTER == ty->type);
 }
 
 int type_function_argc(const struct type *ty)
@@ -342,14 +372,31 @@ const struct expression *type_array_size(const struct type *ty)
 }
 
 
+const struct type *type_pointer_star(const struct type *ty)
+{
+    assert( type_is_pointer(ty) );
+    return ty->pointer_type.pointed_type;
+}
+
 const struct type *type_get(const char *type_name)
 {
-    internal_warning("type_get not implemented\n");
+    const struct type * type;
+    if (ht_get_entry(type_table, type_name, &type) != 0)
+        return type;
     return type_generic;
 }
 
-const struct type *type_get_pointer_type(const struct type *type)
+const struct type *type_get_pointer_type(const struct pointer *ptr,
+                                         const struct type *type)
 {
     internal_warning("type_get_pointer_type not implemented\n");
+    return type_generic;
+}
+
+const struct type *
+type_get_function_type(const struct type *return_type,
+                       const struct list *type_param_list)
+{
+    internal_warning("type_get_function_type not implemented\n");
     return type_generic;
 }

@@ -150,6 +150,7 @@ void expr_cg_xoperation(struct expression *e)
 
 void expr_cg_symbol(struct expression *e)
 {
+    e->areg = symbol_fully_qualified_name(e->symbol);
     e->vreg = new_register();
     asprintf(&e->vcode, "%s = load %s* %s\n", e->vreg,
              type_cg(e->type), e->areg);

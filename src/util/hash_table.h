@@ -2,7 +2,8 @@
 #define HASH_TABLE_H
 
 #include <stdlib.h>
-#include <list.h>
+
+#include "list.h"
 
 struct hash_table;
 

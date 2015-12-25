@@ -5,6 +5,7 @@
 struct expression;
 
 #include <stdbool.h>
+#include "../module.h"
 #include "../symbol/symbol.h"
 #include "../type/type.h"
 #include "../constant/constant.h"
@@ -66,6 +67,7 @@ struct expression {
     struct constant *constant;
     
     const struct type *target_type;
+    const char *identifier;
     struct symbol *symbol;
 
     char *vcode;// code for computing value
@@ -77,6 +79,7 @@ struct expression {
     char *source_code;
 
     void (*codegen) (struct expression *);
+    void (*check) (struct expression *);
     // why c++ when you have c
 };
 
@@ -85,7 +88,8 @@ bool expr_is_test(const struct expression *e);
 bool expr_is_operation(const struct expression *e);
 
 const struct expression *expr_constant(struct constant *cst);
-const struct expression *expr_symbol(struct symbol *sym);	// var ref
+const struct expression *expr_symbol(struct module *m, const char *identifier);
+
 const struct expression *expr_map(const struct expression *fun,
 				  const struct expression *array);
 const struct expression *expr_reduce(const struct expression *fun,

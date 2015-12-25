@@ -5,7 +5,10 @@ struct symbol;
 
 #include <stdlib.h>
 #include <stdint.h>
+
+#include "symbol_table.h"
 #include "../type/type.h"
+
 
 #define SYM_MAX_SIZE 16
 
@@ -61,8 +64,6 @@ struct symbol_function {
 
 };
 
-
-
 struct symbol {
     const char *name;
 
@@ -87,11 +88,10 @@ struct symbol {
     };
 };
 
-struct symbol *symbol_new(const char *name, const struct type *t);
+struct symbol *symbol_new(const char *name, const struct type *t/*,
+                          struct storage *sto, struct visibility *vby,
+                          struct linkage *lnk*/);
 
-// check a symbol is defined in the symbol_table and get it
-// or return NULL if it is not defined
-struct symbol *stable_get(const char *name);
 
 // symbol helpers
 void symbol_print(const struct symbol *sy);

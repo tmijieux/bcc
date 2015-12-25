@@ -4,9 +4,18 @@
 #ifndef ERROR_OUTPUT
 #define ERROR_OUTPUT stderr
 #endif
-#include "../util/color.h"
 
+#include "../function.h"
+#include "../type/type.h"
+#include "../symbol/symbol.h"
+#include "../expression/expression.h"
+#include "../statement/statement.h"
+#include "../constant/constant.h"
+#include "../util/string2.h"
+    
+#include "../grammar.tab.h"
 #include "../module.h"
+#include "../util/color.h"
 
 void warning(const char *format, ...);
 void internal_warning(const char *format, ...);
@@ -14,7 +23,7 @@ void error(const char *format, ...);
 void fatal_error(const char *format, ...);
 void internal_error(const char *format, ...);
 int error_count(void);
-int yyerror(struct module *m, const char *s);
+int yyerror(const char *s);
 void debugi(const char *format, ...);
 
 #ifndef NDEBUG

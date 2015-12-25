@@ -129,8 +129,8 @@ void fun_cg(struct function *fun)
 }
 
 struct symbol *
-function_declare(struct symbol *declarator, struct list *param_list,
-                 struct module *m)
+function_declare(struct symbol *declarator,
+                 struct list *param_list, struct module *m)
 {
     declarator->type = type_new_function_type(declarator->type, param_list);
     st_set_parameters(param_list);
@@ -148,7 +148,7 @@ function_declare(struct symbol *declarator, struct list *param_list,
     }
     
     for (int i = 1; i <= list_size(param_list); ++i) {
-	assert( ((struct symbol*)list_get(param_list,i))->variable.is_parameter);
+	assert(((struct symbol*)list_get(param_list,i))->variable.is_parameter);
     }
     
     last_function_return_type = declarator->type->function_type.return_value;

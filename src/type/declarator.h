@@ -32,7 +32,25 @@ struct declarator*
 declarator_initializer(struct declarator *de,
                        struct initializer *initializer);
 
-bool declarator_is_abstract(const struct declarator *de);
+bool
+declarator_is_abstract(const struct declarator *de);
 
+const char *
+declarator_get_name(const struct declarator *de);
+
+int
+check_declaration_specifiers(struct list *declarator_specifiers);
+
+struct symbol *
+declarator_to_symbol(struct declarator *declarator,
+                     const struct type *base_type);
+    
+int
+declarator_process_list(struct list *declaration_specifiers,
+                        struct list *declarator,
+                        struct list **ret_list);
+
+const struct type *
+declarator_type(const struct declarator *de, const struct type *base_type);
 
 #endif //DECLARATOR_H

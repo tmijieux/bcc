@@ -3,14 +3,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <list.h>
 
-#include "util/alloc.h"
-
-#include "symbol/symbol_table.h"
-#include "error/error.h"
+#include "function.h"
+#include "module.h"
+#include "program.h"
+#include "codegen.h"
+#include "scanner.h"
 
 #include "symbol/symbol.h"
+#include "symbol/symbol_table.h"
 #include "type/type.h"
 #include "type/pointer.h"
 #include "type/struct.h"
@@ -22,21 +23,27 @@
 #include "expression/expression.h"
 #include "statement/statement.h"
 
+#include "util/list.h"
+#include "util/alloc.h"
+#include "error/error.h"
 
-#include "function.h"
-#include "module.h"
-#include "program.h"
-#include "codegen.h"
-#include "scanner.h"
-
-struct list *declarator_list_append(struct list *l, struct symbol *s);
-
+extern int yylex();
+int check_declaration_specifiers(struct list *declarator_specifiers);
+int process_declarator(struct list *declaration_specifiers,
+struct list *declarator,
+struct list **ret_list);
 %}
+/*          reentrant : 
+            %pure-parser
+            %locations
+            %defines
+            %error-verbose
+            %lex-param { void *scanner }
+*/
+/*%expect 1*/
 
-%parse-param { struct module *m }
 %token <string> TOKEN_IDENTIFIER
 %token <constant> TOKEN_CONSTANT
-%token <string> TOKEN_STRING_LITERAL
 %token <string> TOKEN_TYPE_NAME
                         
 %token TOKEN_PTR_OP TOKEN_INC_OP TOKEN_DEC_OP TOKEN_LEFT_OP TOKEN_RIGHT_OP
@@ -145,9 +152,8 @@ struct list *declarator_list_append(struct list *l, struct symbol *s);
 %%
 
 primary_expression
-: TOKEN_IDENTIFIER { $$ = expr_symbol(stable_get($1)); }
+: TOKEN_IDENTIFIER { $$ = expr_symbol(m, $1); }
 | TOKEN_CONSTANT { $$ = expr_constant($1); }
-//| TOKEN_STRING_LITERAL { $$ = expr_constant(string_to_constant($1)); }
 | '(' expression ')' { $$ = $2; }
 ;
 
@@ -215,7 +221,7 @@ shift_expression
 | shift_expression TOKEN_LEFT_OP additive_expression
 { $$ = expr_shift_left($1, $3); }
 | shift_expression TOKEN_RIGHT_OP additive_expression
-{ $$ = expr_shift_right($1, $3); } 
+{ $$ = expr_shift_right($1, $3); }
 ;
 
 relational_expression
@@ -296,9 +302,13 @@ constant_expression
 
 declaration
 : declaration_specifiers ';' { $$ = list_new(0);
-    warning("declaration does not declare anything\n");
-}
-| declaration_specifiers init_declarator_list ';' { $$ = $2 };
+     warning("declaration does not declare anything\n");
+ }
+| declaration_specifiers init_declarator_list ';'
+{ declarator_process_list($1, $2, &$$); }
+// --> check declarations specifiers once before
+// $$ =  list_map($2, declarator_to_symbols, $2);
+// --> insert in table
 ;
 
 declaration_specifiers
@@ -414,7 +424,7 @@ direct_declarator
 | direct_declarator '[' constant_expression ']' { $$ = declarator_array($1, $3); }
 | direct_declarator '[' ']' { $$ = declarator_array($1, void_expression); }
 | direct_declarator '(' parameter_type_list ')'
-  { $$ = declarator_function($1, $3); }
+{ $$ = declarator_function($1, $3); }
 | direct_declarator '(' identifier_list ')' // old style
 { $$ = declarator_function_old($1, $3); } 
 | direct_declarator '(' ')' { $$ = declarator_function($1, list_new(0)); }
@@ -435,7 +445,7 @@ type_qualifier_list
 parameter_type_list
 : parameter_list { $$ = $1 };
 | parameter_list ',' TOKEN_ELLIPSIS { $$ = $1;
-    internal_warning("param_list ellipsis "); }
+     internal_warning("param_list ellipsis "); }
 ;
 
 parameter_list
@@ -458,7 +468,7 @@ type_name
 : specifier_qualifier_list { $$ = specifier_list_get_type($1);  }
 | specifier_qualifier_list abstract_declarator {
     $$ = specifier_list_get_type($1);
-}
+ }
 ;
 
 abstract_declarator
@@ -474,12 +484,12 @@ direct_abstract_declarator
 | direct_abstract_declarator '[' ']'
 { $$ = declarator_array($1, void_expression); }
 | direct_abstract_declarator '[' constant_expression ']'
-  { $$ = declarator_array($1, $3); }
+{ $$ = declarator_array($1, $3); }
 | '(' ')'  { $$ = declarator_function(NULL, list_new(0)); }
 | '(' parameter_type_list ')'  { $$ = declarator_function(NULL, $2); }
 | direct_abstract_declarator '(' ')' { $$ = declarator_function($1, list_new(0)); }
 | direct_abstract_declarator '(' parameter_type_list ')'
-  { $$ = declarator_function($1, $3); }
+{ $$ = declarator_function($1, $3); }
 ;
 
 initializer
@@ -513,7 +523,7 @@ compound_statement
 | left_brace statement_list right_brace { $$ = stmt_compound(list_new(0), $2); }
 | left_brace declaration_list right_brace { $$ = stmt_compound($2, list_new(0)); }
 | left_brace declaration_list statement_list right_brace
- { $$ = stmt_compound($2, $3); }
+{ $$ = stmt_compound($2, $3); }
 ;
 
 left_brace
@@ -573,23 +583,18 @@ external_declaration
     int si = list_size($1);
     for (int i = 1; i <= si; ++i)
         module_add_global(m, list_get($1, i), false);
-}
+ }
 ;
 
 function_definition
-: declaration_specifiers declarator declaration_list compound_statement
-| declaration_specifiers declarator compound_statement
-| declarator declaration_list compound_statement
-| declarator compound_statement
+: function_definition_header compound_statement
+;
+
+function_definition_header
+: declaration_specifiers declarator declaration_list  {  }
+| declaration_specifiers declarator {  }
+| declarator declaration_list {  }
+| declarator {  }
 ;
 
 %%
-struct list *declarator_list_append(struct list *l, struct symbol *s)
-{
-    list_append(l, s);
-    s->symbol_type = SYM_VARIABLE;
-    if (!st_add(s)) {
-        error("symbol multiple definition: %s \n", s->name);
-    }
-    return l;
-}

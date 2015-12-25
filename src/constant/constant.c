@@ -45,7 +45,8 @@ struct constant *constant_string_literal(const char *string)
 
     const struct type *char_type = type_get("char");
     cst = constant_new();
-    cst->type = type_get_pointer_type(char_type);
+    struct pointer *ptr = pointer_new(list_new(0), NULL);
+    cst->type = type_get_pointer_type(ptr, char_type);
     lit = string_get_or_create_literal(str);
     cst->stringv = lit->value;
     return cst;
@@ -67,7 +68,7 @@ struct constant *constant_integer_int(int integer)
     struct constant *cst = NULL;
 
     cst = constant_new();
-    cst->type = type_long;
+    cst->type = type_int;
     cst->integer.intv.signed_ = integer;
     return cst;
 }

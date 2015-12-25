@@ -47,13 +47,13 @@ $(TARGET): $(OBJ) libutil.a
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $^ -o $@
-	$(CC) $(CLFAGS) -MM $^ -o $*.d
+	$(CC) $(CFLAGS) -MM $^ -o $*.d
 
 grammar.c:grammar.y
 	$(YACC) -d -o $@ --defines=grammar.tab.h $^
 
 scanner.c: scanner.l grammar.c
-	$(LEX) -o $@ $<
+	$(LEX) -o $@ $< 
 
 libutil.a:  util
 	make -C util/

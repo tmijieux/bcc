@@ -13,17 +13,14 @@
 #include "../codegen.h"
 #include "../function.h"
 
+static struct symbol_table *st;
+
 struct symbol_table {
     int level;
     struct hash_table *ht;
     struct symbol_table *next;
-
     int64_t size;
 };
-
-static int init__ = 0, exit__ = 0;
-
-static struct symbol_table *st = NULL;
 
 /**
  *  This is a temporary variable used to save
@@ -37,29 +34,19 @@ static void check_variable_use(const struct hash_table *);
 void st_set_parameters(struct list *l)
 {
     function_parameters = l;
-    /* if (st->level == 0)	{ // this has no meaning inside a function */
-    /*     function_parameters = l; */
-    /* } else { */
-    /*     internal_error("st_set_parameter was called inside a block\n"); */
-    /* } */
+    if (st->level == 0)	{ // this has no meaning inside a function
+        function_parameters = l;
+    } else {
+        internal_error("st_set_parameter was called inside a block\n");
+    }
 }
 
-/**
- * initialize the symbol_table stack module
- * no action within the module is to be considered valid
- * before this function returns
- *
- */
 void st_init(void)
 {
-    if (!init__) {
-	st = (struct symbol_table *) calloc(sizeof *st, 1);
-	st->ht = ht_create(100, NULL);
-	st->next = NULL;
-	st->level = 0;
-
-	init__ = 1;
-    }
+    st = calloc(sizeof *st, 1);
+    st->ht = ht_create(0, NULL);
+    st->next = NULL;
+    st->level = 0;
 }
 
 /**
@@ -94,12 +81,11 @@ int st_add(struct symbol *sy)
  */
 int st_search(const char *name, struct symbol **sy_ret)
 {
-    struct symbol_table *syt = st;
-
-    while (syt != NULL) {
-	if (ht_get_entry(syt->ht, name, sy_ret) == 0)
+    struct symbol_table *sym = st;
+    while (sym != NULL) {
+	if (ht_get_entry(sym->ht, name, sy_ret) == 0)
 	    return 1;
-	syt = syt->next;
+	sym = sym->next;
     }
     return 0;
 }
@@ -112,10 +98,8 @@ void st_pop(void)
 {
     if (st->level > 0) {
 	check_variable_use(st->ht);
-	ht_free(st->ht);
-	struct symbol_table *tmp = st->next;
-	free(st);
-	st = tmp;
+        st->ht = NULL;
+	st = st->next;
     }
 }
 
@@ -126,11 +110,11 @@ void st_pop(void)
  */
 void st_push(void)
 {
-    struct symbol_table *tmp = calloc(sizeof *tmp, 1);
-    tmp->ht = ht_create(100, NULL);
-    tmp->next = st;
-    tmp->level = st->level + 1;
-    st = tmp;
+    struct symbol_table *new = calloc(sizeof *new, 1);
+    new->ht = ht_create(100, NULL);
+    new->next = st;    
+    new->level = st->level + 1;
+    st = new;
 
     if (st->level == 1)	{ // if we just entered inside a function
 	int s = list_size(function_parameters);
@@ -146,7 +130,7 @@ void st_push(void)
 		error("symbol multiple definition: %s \n", tmp->name);
             symb_cg(tmp);
 	}
-	function_parameters = list_new(0);	// ... and reset the list
+	function_parameters = list_new(0); // ... and reset the list
     }
 }
 
@@ -156,13 +140,10 @@ void st_push(void)
  * after this function was called
  *
  */
-void st_exit(void)
+void st_exit(struct symbol_table *st)
 {
-    if (!exit__) {
-	st = NULL;
-	init__ = 1;
-	exit__ = 1;
-    }
+    if (NULL != st) st->ht = NULL;
+    st = NULL;
 }
 
 /**
@@ -171,7 +152,7 @@ void st_exit(void)
  * 1 if for a function
  * >= 2 is for an compound instruction (block) within a function
  */
-int st_level(void)
+int st_level(struct symbol_table *st)
 {
     return st->level;
 }

@@ -3,6 +3,7 @@
 
 #include "list.h"
 #include "list_node.h"
+#include <hash_table.h>
 
 struct list {
     struct list_node *front_sentinel;
@@ -146,4 +147,36 @@ struct hash_table *list_to_hashtable(const struct list *l,
 	ht_add_entry(ht, element_keyname(el), el);
     }
     return ht;
+}
+
+static void *uncurry(void *arg, void *fun)
+{
+    return ((void *(*)(void*)) fun)(arg);
+}
+
+struct list *list_map(const struct list *l, void *(*fun)(void*))
+{
+    return list_map_r(l, &uncurry, fun);
+}
+
+void list_each(const struct list *l, void (*fun)(void*))
+{
+    list_each_r(l, (void (*)(void*,void*))&uncurry, fun);
+}
+
+struct list *list_map_r(const struct list *l,
+		      void *(*fun)(void*, void*), void *args)
+{
+    int si = list_size(l);
+    struct list *ret= list_new(0);
+    for (int i = 1; i <= si; ++i)
+	list_append(ret, fun(list_get(l, i), args));
+    return ret;
+}
+
+void list_each_r(const struct list *l, void (*fun)(void*, void*), void *args)
+{
+    int si = list_size(l);
+    for (int i = 1; i <= si; ++i)
+	fun(list_get(l, i), args);
 }

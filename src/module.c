@@ -14,6 +14,11 @@
 #include "error/error.h"
 #include "util/hash_table.h"
 
+#include "scanner.h"
+#include "grammar.tab.h"
+
+struct module *m;
+
 struct module {
     struct hash_table *funtable;
     struct list *funlist;
@@ -37,24 +42,17 @@ static void check_main_prototype(struct symbol *main);
 struct module *module_new(const char *module_name)
 {
     struct module *m = calloc(sizeof *m, 1);
+    
     m->funtable = ht_create(0, NULL);
-
     m->funlist = list_new(0);
+    
     m->protolist = list_new(0);
     m->globlist = list_new(0);
 
     m->name = module_name;
-
     module_add_default_prototype(m);
     
     return m;
-}
-
-void module_free(struct module *m)
-{
-    ht_free(m->funtable);
-    list_free(m->funlist);
-    free(m);
 }
 
 struct function *
@@ -70,7 +68,6 @@ module_get_or_create_function(struct module *m, struct symbol *sym)
             check_main_prototype(sym);
         }
     }
-
     
     return fun;
 }
@@ -190,6 +187,8 @@ static void check_main_prototype(struct symbol *main)
         return;
     }
 
+    
+    
     const struct list *l = type_function_argv(main->type);
     const struct type *t1, *t2, *t3;
     switch (argc) {
@@ -201,7 +200,7 @@ static void check_main_prototype(struct symbol *main)
             display_main_proto();
             return;
         }
-        if (!type_is_array(t2) || type_array_values(t2) != type_string) {
+        if (!type_is_array(t2) || type_array_values(t2) != type_generic/*FIXME*/) {
             display_main_proto();
             return;
         }
@@ -217,11 +216,11 @@ static void check_main_prototype(struct symbol *main)
             display_main_proto();
             return;
         }
-        if (!type_is_array(t3) || type_array_values(t3) != type_string) {
+        if (!type_is_array(t3) || type_array_values(t3) != type_generic/*FIXME*/) {
             display_main_proto();
             return;
         }
-        if (!type_is_array(t3) || type_array_values(t3) != type_string) {
+        if (!type_is_array(t3) || type_array_values(t3) != type_generic/*FIXME*/) {
             display_main_proto();
             return;
         }
@@ -230,4 +229,10 @@ static void check_main_prototype(struct symbol *main)
     default:
         break;
     }
+}
+
+int module_check(struct module *m)
+{
+
+    return error_count();
 }

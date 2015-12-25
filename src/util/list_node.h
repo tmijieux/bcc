@@ -12,10 +12,10 @@ struct list_node {
 #define SENTINEL_NODE 1
 #define DATA_NODE     0
 
-#define node_new(da, sen)						\
+#define node_new(da, sen)   \
     ({ struct list_node *n = (struct list_node*) malloc(sizeof(*n));	\
-	n->data = (da);							\
-	n->is_sentinel = (sen);						\
+	n->data = (da);					\
+	n->is_sentinel = (sen);				\
 	n;})
 #define node_free(no)	       (free(no))
 #define node_get_next(no)      ((no)->next)
@@ -24,4 +24,4 @@ struct list_node {
 #define node_set_data(no, da)  ((no)->data = (da))
 #define node_is_sentinel(no)   ((no)->is_sentinel)
 
-#endif	//LIST_NODE_H
+#endif //LIST_NODE_H

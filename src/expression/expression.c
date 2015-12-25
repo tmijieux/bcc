@@ -1,7 +1,3 @@
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -12,6 +8,19 @@
 #include "../constant/string_literal.h"
 #include "../error/error.h"
 #include "../util/color.h"
+
+
+static struct symbol *stable_get(const char *name)
+{
+    struct symbol *sy = NULL;
+    if (!st_search( name, &sy)) {
+	error("undefined reference to %s\n", name);
+	sy = symbol_new(name, type_generic);
+    }
+
+    return sy;
+}
+
 
 static struct expression *expr_new(enum expression_type ext)
 {
@@ -69,17 +78,20 @@ static void cast_to_greatest_precision(struct expression *expr)
     }
 }
 
-const struct expression *expr_symbol(struct symbol *sym)
+const struct expression *expr_symbol(struct module * m, const char *identifier)
 {
     struct expression *expr = expr_new(EXPR_SYMBOL);
-
-    expr->type = sym->type;
-    expr->symbol = sym;
-    symbol_use(sym);
     expr->codegen = &expr_cg_symbol;
-    expr->areg = symbol_fully_qualified_name(sym);
-    expr->source_code = sym->name;
-        
+    expr->identifier = identifier;
+    expr->symbol = stable_get(expr->identifier);
+    expr->type = expr->symbol->type;
+    
+    symbol_use(expr->symbol);
+    expr->source_code = strdup(identifier);
+    
+    if (type_generic == expr->type)
+        return expr;
+
     return expr;
 }
 
@@ -98,14 +110,12 @@ const struct expression *expr_funcall(const struct expression *fun,
     struct expression *expr = expr_new(EXPR_FUNCALL);
     expr->codegen = &expr_cg_funcall;
     expr->args = args;
-//    expr->symbol = fun;
-
-    assert(args != NULL);
+    expr->fun = fun;
 
     if (!type_is_function(fun->type)) {
 	fatal_error("'%s' is not a function.\n", fun->source_code);
 	expr->type = type_generic;
-	return expr;
+	return false;
     }
 
     const struct list *proto = type_function_argv(fun->type);
@@ -115,7 +125,7 @@ const struct expression *expr_funcall(const struct expression *fun,
 
     if (list_size(args) != s) {
 	error("%s: illegal number of arguments.\n", fun->source_code);
-	return expr;
+        return false;
     }
 
     for (unsigned int i = 1; i <= s; ++i) {
@@ -134,7 +144,6 @@ const struct expression *expr_funcall(const struct expression *fun,
 		  color("light blue", "was given."));
 	}
     }
-
     return expr;
 }
 

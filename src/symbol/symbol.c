@@ -45,16 +45,6 @@ void symbol_print(const struct symbol *sy)
     fputs("\b\n", stderr);
 }
 
-struct symbol *stable_get(const char *name)
-{
-    struct symbol *sy = NULL;
-    if (!st_search(name, &sy)) {
-	error("undefined reference to %s\n", name);
-	sy = symbol_new(name, type_generic);
-    }
-
-    return sy;
-}
 
 char *symbol_fully_qualified_name(const struct symbol *sym)
 {

@@ -1,7 +1,7 @@
 %{
 /* Jutta Degener, 1995  */
 #include <stdio.h>
-#include "util/string2.h"
+
 
 #include "function.h"
 #include "type/type.h"
@@ -10,7 +10,8 @@
 #include "statement/statement.h"
 #include "constant/constant.h"
 #include "error/error.h"
-
+#include "util/string2.h"
+    
 #include "scanner.h"
 #include "grammar.tab.h"
 
@@ -21,10 +22,16 @@ static void count(void);
 static void comment(void);
 static int check_type(void);
 static void line_marker(void);
-
 extern char* yyfilename;
 
 %}
+/*
+%option reentrant
+%option bison-bridge
+%option bison-locations
+*/
+%option noyywrap
+%option yylineno
 
 D                       [0-9]
 L                       [a-zA-Z_]
@@ -32,7 +39,7 @@ H                       [a-fA-F0-9]
 E                       [Ee][+-]?{D}+
 FS                      (f|F|l|L)
 IS                      (u|U|l|L)*
-%option yylineno
+
 
 %%
 "/*"                    { comment(); }
@@ -93,7 +100,7 @@ IS                      (u|U|l|L)*
     return(TOKEN_CONSTANT);
 // decimal integer
    }
-L?'(\\.|[^\\'])+'     { count(); return(TOKEN_CONSTANT); } 
+L?'(\\.|[^\\'])+'     { count(); return(TOKEN_CONSTANT); /*char?*/ } 
 
 {D}+{E}{FS}?            { count(); return(TOKEN_CONSTANT); 
 // fp with exponent, no dot
@@ -162,11 +169,6 @@ L?\"(\\.|[^\\"])*\"   {
 .                       { /* ignore bad characters */ }
 
 %%
-
-int yywrap()
-{
-        return 1;
-}
 
 static void comment(void)
 {
@@ -242,5 +244,5 @@ static void line_marker(void)
     } else {
         fatal_error("cannot compile file with unprocessed preprocessor directives\n");
     }
-//    debug("line_marker %d, %s\n", yylineno, yyfilename);
+//    debug("line_marker %d, %s\n", lineno, yyfilename);
 }
