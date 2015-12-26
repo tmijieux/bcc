@@ -31,17 +31,23 @@ const char *type_cg(const struct type *t)
     switch (t->type) {
     case TYPE_ARRAY:
         //          {i32, [ 100 x type ] }
-        asprintf(&lt, "{i64, [ 0 x %s ]}*", type_cg(type_array_values(t)));
+        asprintf(&lt, "[ 0 x %s ]", type_cg(type_array_values(t)));
         break;
     case TYPE_FUNCTION:
-        asprintf(&lt, "%s (%s) *",
-                 type_cg(type_function_return(t)),
+        asprintf(&lt, "%s (%s) *", type_cg(type_function_return(t)),
                  type_cg_arglist_nameless(type_function_argv(t)));
+        break;
+    case TYPE_POINTER:
+        asprintf(&lt, "%s*", type_cg(type_pointer_star(t)));
         break;
 
     case TYPE_FLOAT:
         lt = "float";
         break;
+    case TYPE_DOUBLE:
+        lt = "float";
+        break;
+        
     case TYPE_VOID:
         lt = "void";
         break;

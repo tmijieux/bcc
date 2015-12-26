@@ -132,7 +132,8 @@ struct symbol *
 function_declare(struct symbol *declarator,
                  const struct list *param_list, struct module *m)
 {
-    declarator->type = type_new_function_type(declarator->type, param_list);
+    assert( type_is_function(declarator->type) );
+
     st_set_parameters(param_list);
     declarator->symbol_type = SYM_FUNCTION;
     

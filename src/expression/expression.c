@@ -113,7 +113,9 @@ const struct expression *expr_funcall(const struct expression *fun,
     expr->fun = fun;
 
     if (!type_is_function(fun->type)) {
-	fatal_error("'%s' is not a function.\n", fun->source_code);
+        if (type_generic != fun->type) {
+            fatal_error("'%s' is not a function.\n", fun->source_code);
+        }
 	expr->type = type_generic;
 	return false;
     }

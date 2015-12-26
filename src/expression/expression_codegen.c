@@ -54,11 +54,13 @@ static char *new_register(void)
     return reg;
 }
 
+/*
 static void new_registers(int n, char *tab[])
 {
     for (int i = 0; i < n; i++)
         tab[i] = new_register();
 }
+*/
 
 static void
 expr_cg_operation(struct expression *e, const char *op, const char *prefix)

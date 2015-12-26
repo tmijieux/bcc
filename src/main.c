@@ -18,26 +18,12 @@ char *yyfilename = NULL;
 
 int main(int argc, char *argv[])
 {
-    /* const struct type *arrt = type_new_array_type( */
-    /*     type_int, */
-    /*     expr_constant(constant_integer_int(0))); */
-
-    /* arrt = type_new_array_type(type_new_function_type(type_float, list_new(0)), */
-    /*                            expr_constant(constant_integer_int(10))); */
-    /* arrt = type_new_array_type(arrt, */
-    /*                            expr_constant(constant_integer_int(2))); */
-    
-    /* printf("%s\n", type_printable(arrt)); */
-    /* exit(EXIT_SUCCESS); */
-    
-    
     struct bcc_option bopt ;//= { 0 };
     int err = 0;
-
+    error_set_program_name(argv[0]);
+    
     if (1 == argc) {
-        yyfilename = *argv;
-        internal_error("no input files\n"); // exits
-        // never reached
+        internal_error("no input files\n");
         fprintf(stderr, "compilation terminated\n");
         exit(EXIT_FAILURE);
     }

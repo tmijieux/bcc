@@ -78,8 +78,9 @@ static int module_add_default_prototype(struct module *m)
     
     param = symbol_new("size", type_long);
     param->variable.is_parameter = true;
-    fun = function_declare(symbol_new("GC_malloc", type_generic),
-                           list_new(LI_ELEM, param, NULL), m);
+    const struct list *paramlist = list_new(LI_ELEM, param, NULL);
+    const struct type *ftype = type_get_function_type(type_generic, paramlist);
+    fun = function_declare(symbol_new("GC_malloc", ftype), paramlist, m);
     module_add_prototype(m, fun);
 
     return 0;

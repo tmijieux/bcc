@@ -22,7 +22,8 @@ static void count(void);
 static void comment(void);
 static int check_type(void);
 static void line_marker(void);
-extern char* yyfilename;
+extern char *yyfilename;
+void newline();
 
 %}
 /*
@@ -165,7 +166,8 @@ L?\"(\\.|[^\\"])*\"   {
 "|"                     { count(); return('|'); }
 "?"                     { count(); return('?'); }
 
-[ \t\v\n\f]             { count(); }
+[ \t\v\f]             { count(); }
+[\n]                  { count(); newline(); }
 .                       { /* ignore bad characters */ }
 
 %%
@@ -221,7 +223,6 @@ static int check_type(void)
 *               return(TOKEN_TYPE_NAME);
 *       it actually will only return IDENTIFIER
 */
-
     return(TOKEN_IDENTIFIER);
 }
 
@@ -244,5 +245,7 @@ static void line_marker(void)
     } else {
         fatal_error("cannot compile file with unprocessed preprocessor directives\n");
     }
-//    debug("line_marker %d, %s\n", lineno, yyfilename);
+//  debug("line_marker %d, %s\n", lineno, yyfilename);
 }
+
+void newline(){}

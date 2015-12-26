@@ -7,15 +7,15 @@
 #include "../util/list.h"
 #include "../util/hash_table.h"
 
-#define DEFINE_TYPE(ty)				\
-    const struct type* type_##ty;		\
-    const struct type* type_##ty##_v;		\
-
-#define INIT_TYPE(ty, TY)				\
-    type_##ty = type_new(TYPE_##TY);			\
-    type_##ty##_v = type_new(TYPE_##TY);		\
-    ht_add_entry(type_table, #ty, type_##ty);           \
-    ((struct type*)type_##ty##_v)->is_vector = true;	\
+#define DEFINE_TYPE(ty)                                 \
+    const struct type*const type_##ty;                  \
+    const struct type* const type_##ty##_v;		\
+    
+#define INIT_TYPE(ty, TY)                                          \
+    *((const struct type**)&type_##ty) = type_new(TYPE_##TY);      \
+    *((const struct type**)&type_##ty##_v) = type_new(TYPE_##TY);  \
+    ht_add_entry(type_table, #ty, type_##ty);                      \
+    ((struct type*)type_##ty##_v)->is_vector = true;               \
 
 static struct type *type_new(enum type_type t);
 
@@ -193,6 +193,8 @@ static const char *type_arglist(const struct list *l);
 static const char *str_expression_size(const struct expression *expr)
 {
     char *str = "";
+    if (void_expression == expr)
+        return "";
     if (expr->expression_type == EXPR_CONSTANT) {
 	if (expr->type == type_int) {
 	    asprintf(&str, "%d", expr->constant->integer.intv.signed_);

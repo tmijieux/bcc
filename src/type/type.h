@@ -112,15 +112,16 @@ const struct expression *type_array_size(const struct type *ty);
 const struct type *type_pointer_star(const struct type *pointer_type);
 
 // basic types:
-extern const struct type *type_undef;
-extern const struct type *type_generic;
-extern const struct type *type_char;
-extern const struct type *type_short;
-extern const struct type *type_int;
-extern const struct type *type_long;
-extern const struct type *type_float;
-extern const struct type *type_void;
-extern const struct type *type_bool;
+extern const struct type * const type_undef;
+extern const struct type * const type_generic;
+extern const struct type * const type_void;
+extern const struct type * const type_bool;
+extern const struct type * const type_char;
+extern const struct type * const type_short;
+extern const struct type * const type_int;
+extern const struct type * const type_long;
+extern const struct type * const type_float;
+extern const struct type * const type_double;
 
 /**
  *  This variable is used to remember the last type_name that was read

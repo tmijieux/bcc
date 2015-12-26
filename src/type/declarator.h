@@ -38,9 +38,6 @@ declarator_is_abstract(const struct declarator *de);
 const char *
 declarator_get_name(const struct declarator *de);
 
-int
-check_declaration_specifiers(struct list *declarator_specifiers);
-
 struct symbol *
 declarator_to_symbol(struct declarator *declarator,
                      const struct type *base_type);

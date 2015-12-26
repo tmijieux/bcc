@@ -29,9 +29,6 @@
 
 extern int yylex();
 int check_declaration_specifiers(struct list *declarator_specifiers);
-int process_declarator(struct list *declaration_specifiers,
-struct list *declarator,
-struct list **ret_list);
 %}
 /*          %reentrant : 
             %pure-parser
@@ -285,8 +282,8 @@ assignment_operator
 | TOKEN_MOD_ASSIGN    { $$ = '%'; }
 | TOKEN_ADD_ASSIGN    { $$ = '+'; }
 | TOKEN_SUB_ASSIGN    { $$ = '-'; }
-| TOKEN_LEFT_ASSIGN   { $$ = '>'; }
-| TOKEN_RIGHT_ASSIGN  { $$ = '<'; }
+| TOKEN_LEFT_ASSIGN   { $$ = '<'; }
+| TOKEN_RIGHT_ASSIGN  { $$ = '>'; }
 | TOKEN_AND_ASSIGN    { $$ = '&'; }
 | TOKEN_XOR_ASSIGN    { $$ = '^'; }
 | TOKEN_OR_ASSIGN     { $$ = '|'; }
@@ -305,7 +302,7 @@ declaration
 : declaration_specifiers ';' { $$ = list_new(0);
      warning("declaration does not declare anything\n");
  }
-| declaration_specifiers init_declarator_list ';'
+| declaration_specifiers init_declarator_list ';' // beware of typedef storage class
 { declarator_process_list($1, $2, &$$); }
 // --> check declarations specifiers once before
 // $$ =  list_map($2, declarator_to_symbols, $2);
@@ -468,9 +465,8 @@ identifier_list // old style function declaration only
 
 type_name
 : specifier_qualifier_list { $$ = specifier_list_get_type($1);  }
-| specifier_qualifier_list abstract_declarator {
-    $$ = specifier_list_get_type($1);
- }
+| specifier_qualifier_list abstract_declarator
+{ $$ = declarator_type($2, specifier_list_get_type($1)); }
 ;
 
 abstract_declarator
@@ -581,7 +577,7 @@ translation_unit
 
 external_declaration
 : function_definition 
-| declaration {
+| declaration { // maybe handle typedef at this level
     int si = list_size($1);
     for (int i = 1; i <= si; ++i)
         module_add_global(m, list_get($1, i), false);
@@ -602,7 +598,7 @@ function_definition_header
     struct symbol *sy = symbol_new(
         declarator_get_name($2),
         declarator_type($2, specifier_list_get_type($1)));
-    $$ = function_declare(sy, declarator_deepest_param_list($2), m);
+    $$ = function_declare(sy, declarator_deepest_param_list($2), m);  // FIXME
  }
 | declarator declaration_list
  {  internal_error("old style function declaration not supported"); }

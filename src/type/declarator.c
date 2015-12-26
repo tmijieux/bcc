@@ -131,17 +131,9 @@ const char *declarator_get_name(const struct declarator *de)
 }
 
 
-int check_declaration_specifiers(struct list *declarator_specifiers)
-{
-    // check non - abstract ?
-    internal_warning("check_declaration_specifiers not implemented\n");
-    return 0;
-}
-
 struct decl2sym_args {
     const struct type *base_type;
 };
-
 
 
 struct symbol *declarator_to_symbol(struct declarator *declarator,

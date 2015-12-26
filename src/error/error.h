@@ -18,11 +18,15 @@
 #include "../util/color.h"
 
 void warning(const char *format, ...);
-void internal_warning(const char *format, ...);
 void error(const char *format, ...);
 void fatal_error(const char *format, ...);
+
+void internal_warning(const char *format, ...);
 void internal_error(const char *format, ...);
+void internal_fatal_error(const char *format, ...);
+
 int error_count(void);
+void error_set_program_name(const char *program_name_);
 int yyerror(const char *s);
 void debugi(const char *format, ...);
 
