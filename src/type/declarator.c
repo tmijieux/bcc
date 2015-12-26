@@ -213,7 +213,7 @@ declarator_type(const struct declarator *de, const struct type *base_type)
     case DECLARATOR_ARRAY:
         return declarator_type(
             de->next,
-            type_new_array_type_reversed(
+            type_get_array_type_reversed(
                 base_type,
                 de->value.const_expr_array_size));
         break;

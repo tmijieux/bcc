@@ -67,6 +67,17 @@ static size_t type_size__[] = {
     [TYPE_GENERIC] = 8,
 };
 
+
+static const struct type *
+type_new_function_type(const struct type *return_value, const struct list *args);
+
+static const struct type *
+type_new_array_type(const struct type *values,
+		    const struct expression  *array_size);
+static const struct type *
+type_new_array_type_reversed(const struct type *values,
+			     const struct expression*array_size);
+
 static struct hash_table *type_table;
 /**
  *  This variable is used to remember the last type_name that was read
@@ -136,7 +147,7 @@ static struct type *type_new(enum type_type et)
    --> it nest the newly created array inside the one it is given
    keeping the same basic type
 */
-const struct type *
+static const struct type *
 type_new_array_type_reversed(const struct type *values,
 			     const struct expression *array_size)
 {
@@ -154,8 +165,9 @@ type_new_array_type_reversed(const struct type *values,
     return ty;
 }
 
-const struct type *type_new_array_type(const struct type *values,
-				       const struct expression *array_size)
+static const struct type *
+type_new_array_type(const struct type *values,
+                    const struct expression *array_size)
 {
     struct type *ty = type_new(TYPE_ARRAY);
 
@@ -164,7 +176,7 @@ const struct type *type_new_array_type(const struct type *values,
     return ty;
 }
 
-const struct type *	// list of symbols (should be type)
+static const struct type *	// list of symbols (should be type)
 type_new_function_type(const struct type *return_value, const struct list *argv)
 {
     struct type *ty = type_new(TYPE_FUNCTION);
@@ -174,7 +186,7 @@ type_new_function_type(const struct type *return_value, const struct list *argv)
     return ty;
 }
 
-const struct type *	// list of symbols (should be type)
+static const struct type *	// list of symbols (should be type)
 type_new_pointer_type(const struct pointer *ptr, const struct type *pointed_value)
 {
     assert (NULL != ptr);
@@ -405,43 +417,46 @@ const struct type *type_pointer_star(const struct type *ty)
     return ty->pointer_type.pointed_type;
 }
 
-const struct type *type_get(const char *type_name)
+
+static const struct type *type_get_or_create(const struct type *t)
 {
-    const struct type * type = NULL;
-    if (ht_get_entry(type_table, type_name, &type) == 0)
-        return type;
-    return type_generic;
+    const struct type *already_existing = NULL;
+    const char *key = type_printable(t);
+    
+    if (ht_get_entry(type_table, key, &already_existing) == 0)
+        return already_existing;
+    ht_add_entry(type_table, key, t);
+    return t;
 }
 
 const struct type *type_get_pointer_type(const struct pointer *ptr,
                                          const struct type *type)
 {
     assert(NULL != ptr);
-
-    const struct type *already_existing = NULL;
-    const struct type *new =
-        type_new_pointer_type(ptr, type);
-    const char *type_key = type_printable(new);
-    if (ht_get_entry(type_table, type_key, &already_existing) == 0) {
-        new = NULL;
-        return already_existing;
-    } // else {
-    ht_add_entry(type_table, type_key, new);
-    return new;
+    return type_get_or_create(type_new_pointer_type(ptr, type));
 }
 
 const struct type *
 type_get_function_type(const struct type *return_type,
                        const struct list *type_param_list)
 {
-    const struct type *already_existing = NULL;
-    const struct type *new =
-        type_new_function_type(return_type, type_param_list);
-    const char *type_key = type_printable(new);
-    if (ht_get_entry(type_table, type_key, &already_existing) == 0) {
-        new = NULL;
-        return already_existing;
-    } // else {
-    ht_add_entry(type_table, type_key, new);
-    return new;
+    return type_get_or_create(
+        type_new_function_type(return_type, type_param_list));
+}
+
+const struct type *
+type_get_array_type(const struct type *values,
+                    const struct expression *const_expr_array_size)
+{
+    return type_get_or_create(
+        type_new_array_type(values, const_expr_array_size));
+}
+
+
+const struct type *
+type_get_array_type_reversed(const struct type *values,
+                             const struct expression *const_expr_array_size)
+{
+    return type_get_or_create(
+        type_new_array_type_reversed(values, const_expr_array_size));
 }

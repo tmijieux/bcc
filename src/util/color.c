@@ -27,6 +27,10 @@ static void clr_init(void)
     ADD_COLOR("green", "\e[92m");
     ADD_COLOR("yellow", "\e[93m");
     
+    ADD_COLOR("warning", "\e[35;1m");
+    ADD_COLOR("error", "\e[31;1m");
+
+    
     COLOR_LEN = strlen(color("green", ""));
 }
 

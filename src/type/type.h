@@ -80,15 +80,6 @@ size_t type_size(const struct type *t);
 //memory size for holding type on the stack
 // for array it is the size of the pointer to the array
 
-const struct type *
-type_new_function_type(const struct type *return_value, const struct list *args);
-
-const struct type *
-type_new_array_type(const struct type *values,
-		    const struct expression  *array_size);
-const struct type *
-type_new_array_type_reversed(const struct type *values,
-			     const struct expression*array_size);
 
 // types helpers:
 bool type_equal(const struct type *t1, const struct type *t2);
@@ -145,6 +136,10 @@ const struct type *type_get_pointer_type(const struct pointer *ptr,
 const struct type *
 type_get_array_type(const struct type *type,
                     const struct expression *const_expr_array_size);
+
+const struct type *
+type_get_array_type_reversed(const struct type *type,
+                             const struct expression *const_expr_array_size);
 
 const struct type *
 type_get_function_type(const struct type *return_type,

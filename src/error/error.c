@@ -34,7 +34,7 @@ void error_set_program_name(const char *program_name_)
 static void
 compile_error_(const char *format, va_list ap, const char *error_type)
 {
-    fprintf(ERROR_OUTPUT, "%s:%d:%d: %s: ",
+    fprintf(ERROR_OUTPUT, "%s:%d:%d: %s ",
             yyfilename, yylineno, yycolno,  error_type);
     vfprintf(ERROR_OUTPUT, format, ap);
 }
@@ -43,7 +43,7 @@ void warning(const char *format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    compile_error_(format, ap, color("yellow", "warning"));
+    compile_error_(format, ap, color("warning", "warning:"));
 }
 
 void error(const char *format, ...)
@@ -51,14 +51,14 @@ void error(const char *format, ...)
     errc++;
     va_list ap;
     va_start(ap, format);
-    compile_error_(format, ap, color("red", "error"));
+    compile_error_(format, ap, color("error", "error:"));
 }
 
 void fatal_error(const char *format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    compile_error_(format, ap, color("red", "fatal error"));
+    compile_error_(format, ap, color("error", "fatal error:"));
     exit(EXIT_FAILURE);
 }
 
@@ -68,7 +68,7 @@ void fatal_error(const char *format, ...)
 static void
 internal_error_(const char *format, va_list ap, const char *error_type)
 {
-    fprintf(ERROR_OUTPUT, "%s: %s: ", program_name, error_type);
+    fprintf(ERROR_OUTPUT, "%s: %s ", program_name, error_type);
     vfprintf(ERROR_OUTPUT, format, ap);
 }
 
@@ -76,21 +76,21 @@ void internal_warning(const char *format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    internal_error_(format, ap, color("yellow", "warning"));
+    internal_error_(format, ap, color("warning", "warning:"));
 }
 
 void internal_error(const char *format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    internal_error_(format, ap, color("red", "error"));
+    internal_error_(format, ap, color("error", "error:"));
 }
 
 void internal_fatal_error(const char *format, ...)
 {
     va_list ap;
     va_start(ap, format);
-    internal_error_(format, ap, color("red", "fatal error"));
+    internal_error_(format, ap, color("error", "fatal error:"));
     exit(EXIT_FAILURE);
 }
 
@@ -106,12 +106,12 @@ extern unsigned int old_yytext_index;
 
 int yyerror(const char *s)
 {
-    int len;
+    int len = 0 ;
     errc++;
     fflush(stdout);
     fprintf(ERROR_OUTPUT, "%s:%d:%d: %s\n",
-	    yyfilename, yylineno, yycolno, color("red", s));
-    len = fprintf(ERROR_OUTPUT, "near ");
+	    yyfilename, yylineno, yycolno, color("error", s));
+//    len = fprintf(ERROR_OUTPUT, "near ");
     
     char *source_code = "";
     for (int i = old_yytext_index + 1 % YYOLDTEXT_SIZE;
@@ -121,11 +121,16 @@ int yyerror(const char *s)
     asprintf(&source_code, "%s%s", source_code, yytext);
     
     len +=
-	fprintf(ERROR_OUTPUT, "%s\n",
+	fprintf(ERROR_OUTPUT, "\t%s\n",
 		strstrip(color("green", source_code))) - COLOR_LEN;
-    for (int i = 0; i < len - 2; ++i)
-	fputc(' ', ERROR_OUTPUT);
+
+    char *pointer = "\t";
+    for (int i = 0; i < len - 3; ++i)
+	asprintf(&pointer, "%s ", pointer);
+
+    fputs(color("fushia", pointer), ERROR_OUTPUT);
     fputs(color("fushia", "^\n"), ERROR_OUTPUT);
+    
     return 0;
 }
 

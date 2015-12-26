@@ -30,14 +30,18 @@
 extern int yylex();
 int check_declaration_specifiers(struct list *declarator_specifiers);
 %}
-/*          %reentrant : 
-            %pure-parser
-            %locations
-            %defines
-            %error-verbose
-            %lex-param { void *scanner }
+/*
+
+%reentrant : 
+%pure-parser
+%locations
+%defines
+%error-verbose
+%lex-param { void *scanner }
+
 */
-/*%expect 1*/
+
+%expect 1
 
 %token <string> TOKEN_IDENTIFIER
 %token <constant> TOKEN_CONSTANT
@@ -51,8 +55,9 @@ int check_declaration_specifiers(struct list *declarator_specifiers);
 %token TOKEN_RIGHT_ASSIGN TOKEN_AND_ASSIGN TOKEN_XOR_ASSIGN TOKEN_OR_ASSIGN
 
 %token TOKEN_ELLIPSIS
-                        
- // keywords
+
+// keywords
+
 %token TOKEN_TYPEDEF TOKEN_EXTERN TOKEN_STATIC TOKEN_AUTO TOKEN_REGISTER
 %token TOKEN_CHAR TOKEN_SHORT TOKEN_INT TOKEN_LONG TOKEN_SIGNED TOKEN_UNSIGNED
 %token TOKEN_FLOAT TOKEN_DOUBLE TOKEN_CONST TOKEN_VOLATILE TOKEN_VOID
@@ -593,7 +598,7 @@ function_definition
 
 function_definition_header
 : declaration_specifiers declarator declaration_list
- {  internal_error("old style function declaration not supported"); }
+ { error("old style function declaration not supported"); }
 | declaration_specifiers declarator {
     struct symbol *sy = symbol_new(
         declarator_get_name($2),
@@ -601,7 +606,7 @@ function_definition_header
     $$ = function_declare(sy, declarator_deepest_param_list($2), m);  // FIXME
  }
 | declarator declaration_list
- {  internal_error("old style function declaration not supported"); }
+ { error("old style function declaration not supported"); }
 | declarator {
     struct symbol *sy = symbol_new(declarator_get_name($1),
                                    declarator_type($1, type_int));

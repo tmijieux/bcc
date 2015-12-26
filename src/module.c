@@ -162,15 +162,14 @@ void module_add_global(struct module *m, struct symbol *sym, bool extern_)
              extern_ ? "" : "0");
 
     list_append(m->globlist, code);
-
 }
 
 static void display_main_proto(void)
 {
     warning("\nmain definition should follow one of the following prototype:\n"
             "void/int main();\n"
-            "void/int main(int argc, string argv[]);\n"
-            "void/int main(int argc, string argv[], string envp[]);\n");
+            "void/int main(int argc, char *argv[]);\n"
+            "void/int main(int argc, char *argv[], char *envp[]);\n\n");
 }
 
 static void check_main_prototype(struct symbol *main)

@@ -22,7 +22,7 @@ struct specifier *specifier_typename(const char *typename)
 const struct type *specifier_list_get_type(const struct list *specifiers)
 {
     int si = list_size(specifiers);
-    debug("specifier list size: %d\n", si);
+//    debug("specifier list size: %d\n", si);
     for (int i = 1; i <= si; ++i) {
         struct specifier *sp = list_get(specifiers, i);
         switch (sp->specifier_type) {
@@ -48,7 +48,7 @@ const struct type *specifier_list_get_type(const struct list *specifiers)
             return type_double;
             break;
         default:
-            debug("specifier value: %d\n", sp->specifier_type);
+//            debug("specifier value: %d\n", sp->specifier_type);
             continue;
             break;
         }
@@ -56,8 +56,6 @@ const struct type *specifier_list_get_type(const struct list *specifiers)
     internal_warning("specifier_list_get_type not implemented\n");
     return type_generic;
 }
-
-
 
 int check_declaration_specifiers(struct list *declarator_specifiers)
 {
