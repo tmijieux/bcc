@@ -103,16 +103,34 @@ const struct expression *type_array_size(const struct type *ty);
 const struct type *type_pointer_star(const struct type *pointer_type);
 
 // basic types:
-extern const struct type * const type_undef;
-extern const struct type * const type_generic;
-extern const struct type * const type_void;
-extern const struct type * const type_bool;
-extern const struct type * const type_char;
-extern const struct type * const type_short;
-extern const struct type * const type_int;
-extern const struct type * const type_long;
-extern const struct type * const type_float;
-extern const struct type * const type_double;
+extern const struct type *const type_undef;
+extern const struct type *const type_generic;
+extern const struct type *const type_bool;
+
+extern const struct type *const type_void;
+
+
+
+extern const struct type *const type_char;
+extern const struct type *const type_signed_char;
+extern const struct type *const type_unsigned_char;
+
+extern const struct type *const type_short;
+extern const struct type *const type_unsigned_short;
+
+extern const struct type *const type_int;
+extern const struct type *const type_unsigned_int;
+
+extern const struct type *const type_long;
+extern const struct type *const type_unsigned_long;
+
+extern const struct type *const type_long_long;
+extern const struct type *const type_unsigned_long_long;
+
+extern const struct type *const type_float;
+extern const struct type *const type_double;
+
+
 
 /**
  *  This variable is used to remember the last type_name that was read
@@ -127,7 +145,7 @@ extern const struct type *last_type_name;
  */
 const struct type *last_function_return_type;
 
-const struct type *type_get(const char *type_name);
+
 
 #include "pointer.h"
 const struct type *type_get_pointer_type(const struct pointer *ptr,

@@ -141,9 +141,9 @@ const struct expression *expr_funcall(const struct expression *fun,
 	    error("%s(): argument %d has invalid type.\n"
 		  "expected %s %s %s %s\n", fun->source_code, i,
 		  color("green", type_printable(tparg)),
-		  color("light blue", "but"),
+		  "but",
 		  color("yellow", type_printable(targ)),
-		  color("light blue", "was given."));
+		  "was given.\n");
 	}
     }
     return expr;

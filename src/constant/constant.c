@@ -43,10 +43,9 @@ struct constant *constant_string_literal(const char *string)
     struct literal *lit = NULL;
     char *str = strdup(string);
 
-    const struct type *char_type = type_get("char");
     cst = constant_new();
     struct pointer *ptr = pointer_new(list_new(0), NULL);
-    cst->type = type_get_pointer_type(ptr, char_type);
+    cst->type = type_get_pointer_type(ptr, type_char);
     lit = string_get_or_create_literal(str);
     cst->stringv = lit->value;
     return cst;

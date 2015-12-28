@@ -410,13 +410,11 @@ const struct expression *type_array_size(const struct type *ty)
     return ty->array_type.array_size;
 }
 
-
 const struct type *type_pointer_star(const struct type *ty)
 {
     assert( type_is_pointer(ty) );
     return ty->pointer_type.pointed_type;
 }
-
 
 static const struct type *type_get_or_create(const struct type *t)
 {

@@ -248,4 +248,7 @@ static void line_marker(void)
 //  debug("line_marker %d, %s\n", lineno, yyfilename);
 }
 
-void newline(){}
+void newline()
+{
+//    old_yytext_index = 0;
+}
