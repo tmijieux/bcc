@@ -40,9 +40,9 @@
 .\#*
 
 # generated sources
-src/grammar.c
-src/scanner.c
-grammar.tab.h
+*/parser.c
+*/scanner.c
+*/parser.tab.h
 
 # binary
 src/bcc
