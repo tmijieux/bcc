@@ -253,9 +253,8 @@ static const struct expression *operation(enum expression_type et,
     assert(lop != rop);
 
     if (!(type_is_basic(lop->type) && type_is_basic(rop->type))) {
-	error("%s impossible: have %s %s %s\n", opname,
+	error("%s impossible: have %s and %s\n", opname,
 	      color("yellow", type_printable(lop->type)),
-	      color("light blue", "and"),
 	      color("yellow", type_printable(rop->type)));
 
 	expr->type = type_generic;

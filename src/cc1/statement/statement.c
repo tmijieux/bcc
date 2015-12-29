@@ -118,7 +118,7 @@ struct statement *stmt_do_while(const struct expression *cond,
     return stmt;
 }
 
-struct statement *stmt_return_void(void)
+static struct statement *stmt_return_void(void)
 {
     struct statement *stmt = stmt_new(STMT_RETURN);
     if (last_function_return_type != type_void) {
@@ -131,6 +131,9 @@ struct statement *stmt_return_void(void)
 
 struct statement *stmt_return(const struct expression *expr)
 {
+    if (void_expression == expr)
+        return stmt_return_void();
+
     struct statement *stmt = stmt_new(STMT_RETURN);
 
     if (last_function_return_type == type_void) {
@@ -141,12 +144,9 @@ struct statement *stmt_return(const struct expression *expr)
 	    warning("return statement makes an implicit cast\n");
 	    expr = expr_cast(expr, last_function_return_type);
 	} else {
-	    error("returning type %s %s %s %s",
+	    error("returning type %s while %s was expected.\n",
 		  color("yellow", type_printable(expr->type)),
-		  color("light blue", "while"),
-		  color("green",
-			type_printable(last_function_return_type)),
-		  color("light blue", "was expected.\n"));
+		  color("green", type_printable(last_function_return_type)));
 	}
     }
 
