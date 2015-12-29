@@ -45,9 +45,8 @@
 */parser.tab.h
 
 # binary
-src/bcc
-bcc
-cc1
+src/cc1/cc1
+src/bcc/bcc
 
 #test dir
 test/
