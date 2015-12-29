@@ -47,6 +47,7 @@ grammar.tab.h
 # binary
 src/bcc
 bcc
+cc1
 
 #test dir
 test/

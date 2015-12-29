@@ -6,6 +6,7 @@ SRC=	list.c \
 	string2.c \
 	color.c \
 	stack.c \
+	error.c \
 
 ifndef NOGC
 CFLAGS+=-Dmalloc=gcmalloc -Dfree=gcfree \
@@ -14,11 +15,9 @@ LDFLAGS+=-lgc
 SRC+= alloc.c
 endif
 
-
 OBJ=$(patsubst %.c,%.o,$(SRC))
 
 all: libutil.a
-
 
 libutil.a: $(OBJ)
 	rm -rf $@

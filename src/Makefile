@@ -1,71 +1,20 @@
-LEX=lex
-YACC=bison
-CFLAGS=-Wall -std=gnu99 -I. -I./util -O0 -ggdb -D_GNU_SOURCE
-LDFLAGS=-L. -lutil
-CC=cc
-TARGET=bcc
-SRC=	grammar.c \
-	scanner.c \
-	error/error.c \
-	main.c \
-	option.c \
-	module.c \
-	function.c \
-	program.c \
-	symbol/symbol_table.c \
-	type/type.c \
-	type/type_codegen.c \
-	type/specifier.c \
-	type/pointer.c \
-	type/enumerator.c \
-	type/declarator.c \
-	type/struct.c \
-	symbol/symbol.c \
-	symbol/symbol_codegen.c \
-	expression/expression.c \
-	expression/expression_codegen.c \
-	statement/statement.c \
-	statement/statement_codegen.c \
-	constant/string_literal.c \
-	constant/constant.c \
-	misc/initializer.c \
-
-ifndef NOGC
-CFLAGS+=-Dmalloc=gcmalloc -Dfree=gcfree \
-	-Drealloc=gcrealloc -Dcalloc=gccalloc
-LDFLAGS+=-lgc
-endif
-
-all: $(TARGET)
-
-OBJ=$(patsubst %.c,%.o,$(SRC))
-#DEP=$(patsubst %.c,%.d,$(SRC))
-
--include $(DEP)
-
-$(TARGET): $(OBJ) libutil.a
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $^ -o $@
-	$(CC) $(CFLAGS) -MM $^ -o $*.d
-
-grammar.c:grammar.y
-	$(YACC) -d -o $@ --defines=grammar.tab.h $^
-
-scanner.c: scanner.l grammar.c
-	$(LEX) -o $@ $< 
-
-libutil.a:  util
+all: 
+	make -C bcc/
+	make -C cc1/
 	make -C util/
-	cp  util/libutil.a libutil.a
 
 clean:
-	$(RM) $(OBJ) grammar.c scanner.c grammar.tab.h *~ *.d
+	find . -name '*.o' | xargs $(RM)
+	find . -name '*.d' | xargs $(RM)
 	make -C util/ clean
+	make -C bcc/ clean
+	make -C cc1/ clean
 
 fullclean: clean
 	$(RM) $(TARGET)
+	make -C util/ fullclean
+	make -C bcc/ fullclean
+	make -C cc1/ fullclean
 
 edit: 
 	emacs -mm *.c *.h *.y *.l &
