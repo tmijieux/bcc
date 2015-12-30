@@ -20,16 +20,16 @@ static void clr_init(void)
 {
     colors = ht_create(100, NULL);
 
-    ADD_COLOR("RESET", COLOR_RESET);
+    ADD_COLOR("RESET", COLOR(RESET, ""));
     ADD_COLOR("red", "\e[91m");
-    ADD_COLOR("light blue", "\e[96m");
     ADD_COLOR("fushia", "\e[95m");
     ADD_COLOR("green", "\e[92m");
     ADD_COLOR("yellow", "\e[93m");
-    
+
     ADD_COLOR("warning", "\e[35;1m");
     ADD_COLOR("error", "\e[31;1m");
-
+    ADD_COLOR("note", "\e[01;36m");
+    ADD_COLOR("bold", "\e[01m");
     
     COLOR_LEN = strlen(color("green", ""));
 }
@@ -43,6 +43,6 @@ const char *color(const char *clr, const char *message)
     }
 
     char *clr_message;
-    asprintf(&clr_message, "%s%s" COLOR_RESET, clr_code, message);
+    asprintf(&clr_message, "%s%s%s", clr_code, message, COLOR(RESET, ""));
     return clr_message;
 }

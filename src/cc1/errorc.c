@@ -35,7 +35,7 @@ static void
 compile_error_(const char *format, va_list ap, const char *error_type)
 {
     fprintf(ERROR_OUTPUT, "%s:%d:%d: %s ",
-            yyfilename, yylineno, yycolno,  error_type);
+            color("bold", yyfilename), yylineno, yycolno,  error_type);
     vfprintf(ERROR_OUTPUT, format, ap);
 }
 

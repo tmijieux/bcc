@@ -13,7 +13,7 @@
 int yyparse(void);
 extern FILE *yyin;
 
-char *yyfilename = "stdin";
+char *yyfilename = "<stdin>";
 
 int main(int argc, char *argv[])
 {

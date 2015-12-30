@@ -1,14 +1,15 @@
 TARGET=bcc
-.PHONY: all clean
+.PHONY: all clean  bcc
 
 all: $(TARGET)
 
-$(TARGET):
+bcc:
 	make -C src/
-	ln -s src/$@ ./$@ -f
+	ln -s src/bcc/$@ ./$@ -f
 
 clean:
 	make -C src/ clean
 
 fullclean: clean
 	$(RM) $(TARGET)
+	make -C src/ fullclean

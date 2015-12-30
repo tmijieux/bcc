@@ -40,9 +40,9 @@
 .\#*
 
 # generated sources
-*/parser.c
-*/scanner.c
-*/parser.tab.h
+parser.c
+scanner.c
+parser.tab.h
 
 # binary
 src/cc1/cc1

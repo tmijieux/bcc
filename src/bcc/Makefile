@@ -27,7 +27,7 @@ bcc: $(OBJ_BCC)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $^ -o $@
-	$(CC) $(CFLAGS) -MM $^ -o $*.d
+#	$(CC) $(CFLAGS) -MM $^ -o $*.d
 
 grammar.tab.h: grammar.c
 

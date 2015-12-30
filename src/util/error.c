@@ -10,11 +10,11 @@
 #include "color.h"
 #include "string2.h"
 
-static char *program_name;
+static const char *program_name;
 
 void error_set_program_name(const char *program_name_)
 {
-    program_name = strdup(program_name_);
+    program_name = color("bold", basename(strdup(program_name_)));
 }
 
 /* internal start */

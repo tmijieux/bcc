@@ -49,7 +49,7 @@ cc1: $(OBJ_CC1) ../util/libutil.a
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $^ -o $@
-	$(CC) $(CFLAGS) -MM $^ -o $*.d
+#	$(CC) $(CFLAGS) -MM $^ -o $*.d
 
 parser.tab.h: parser.c
 
