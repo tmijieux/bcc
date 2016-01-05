@@ -23,8 +23,11 @@ int main(int argc, char **argv)
 {
     struct bcc_option bopt = { 0 };
     int err = 0;
+
+    bopt_init(&bopt);
     error_set_program_name(argv[0]);
     parse_options(&argc, &argv, &bopt);
+    option_check(&bopt, argc-1);
     stat_files(&argc, argv);
 
     if (1 == argc)
@@ -40,13 +43,12 @@ int main(int argc, char **argv)
         
         char *mname = strdup(argv[i]);
         yyfilename = mname;
-  
-        err = compile_file(argv[i], &bopt);
+        err = compile_chain(argv[i], &bopt);
+
         if (err)
             break;
         i++;
     }
-
     return err ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
@@ -62,19 +64,4 @@ void stat_files(int *argc, char *argv[])
             --(*argc);
         }
     }
-}
-
-int compile_file(const char *filename, struct bcc_option *bopt)
-{
-    int fstage, lstage;
-    char *file_extension[2], *output_name;
-    const char *ext;
-    
-    split_extension(filename, file_extension);
-    fstage = first_stage_by_extension(file_extension[1]);
-    lstage = last_stage_by_option(bopt);
-    ext = extension_by_stage(lstage);
-    asprintf(&output_name, "%s%s%s", basename(file_extension[0]),
-             strlen(ext) > 0 ? "." : "", ext);
-    return compile_chain(filename, output_name, fstage, lstage);
 }

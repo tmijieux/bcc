@@ -14,7 +14,6 @@
 #include "../function.h"
 #include "errorc.h"
 
-
 static struct symbol_table *st;
 
 struct symbol_table {
@@ -63,16 +62,19 @@ void st_init(void)
 
 int st_add(struct symbol *sy)
 {
-    sy->level = st->level;
+    sy->scope_level = st->level;
+
     if (ht_has_entry(st->ht, sy->name))
 	return 0;
-
+    
     if (st->level >= 1) {
 	symb_cg(sy);
 	fun_add_allocas(current_fun, sy);
     }
 
     ht_add_entry(st->ht, sy->name, sy);
+    sy->in_table = true;
+    
     return 1;
 }
 
@@ -154,9 +156,14 @@ void st_exit(struct symbol_table *st)
  * 1 if for a function
  * >= 2 is for an compound instruction (block) within a function
  */
-int st_level(struct symbol_table *st)
+int st_level(void)
 {
     return st->level;
+}
+
+bool st_global_context(void)
+{
+    return (0 == st->level);
 }
 
 static void check_variable_use(const struct hash_table *ht)
@@ -165,8 +172,26 @@ static void check_variable_use(const struct hash_table *ht)
     int si = list_size(l);
     for (int i = 1; i <= si; ++i) {
 	struct symbol *sy = list_get(l, i);
-	if (sy->symbol_type == SYM_VARIABLE && !sy->variable.used) {
+	if (!symbol_used(sy))
 	    warning("unused variable %s\n", sy->name);
-	}
+    }
+}
+
+
+static void symbol_dump__(const char *dontcare__, void *symbol, void *unused__)
+{
+    symbol_debug_print(symbol);
+}
+
+void st_dump(void)
+{
+    struct symbol_table *st_ = st;
+    fprintf(stderr, "Dump symbol table:\n");
+    while (st_ != NULL) {
+
+        fprintf(stderr, "Level %d\n", st_->level);
+        ht_for_each(st_->ht, symbol_dump__, NULL);
+        fputs("\n", stderr);
+        st_ = st_->next;
     }
 }

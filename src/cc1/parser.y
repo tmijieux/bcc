@@ -46,7 +46,7 @@ int check_declaration_specifiers(struct list *declarator_specifiers);
 
 %token <string> TOKEN_IDENTIFIER
 %token <constant> TOKEN_CONSTANT
-%token <string> TOKEN_TYPE_NAME
+%token <type> TOKEN_TYPE_NAME
                         
 %token TOKEN_PTR_OP TOKEN_INC_OP TOKEN_DEC_OP TOKEN_LEFT_OP TOKEN_RIGHT_OP
 %token TOKEN_LE_OP TOKEN_GE_OP TOKEN_EQ_OP TOKEN_NE_OP
@@ -305,14 +305,10 @@ constant_expression
 ;
 
 declaration
-: declaration_specifiers ';' { $$ = list_new(0);
-     warning("declaration does not declare anything\n");
- }
+: declaration_specifiers ';'
+{ $$ = list_new(0);warning("declaration does not declare anything\n"); }
 | declaration_specifiers init_declarator_list ';' // beware of typedef storage class
 { declarator_process_list($1, $2, &$$); }
-// --> check declarations specifiers once before
-// $$ =  list_map($2, declarator_to_symbols, $2);
-// --> insert in table
 ;
 
 declaration_specifiers
@@ -602,15 +598,17 @@ function_definition_header
  { error("old style function declaration not supported"); }
 | declaration_specifiers declarator {
     struct symbol *sy = symbol_new(
-        declarator_get_name($2),
-        declarator_type($2, specifier_list_get_type($1)));
+        declarator_get_name($2), SYM_FUNCTION,
+        declarator_type($2, specifier_list_get_type($1)),
+        specifier_list_get_storage_class($1));
     $$ = function_declare(sy, declarator_deepest_param_list($2), m);  // FIXME
  }
 | declarator declaration_list
  { error("old style function declaration not supported"); }
 | declarator {
-    struct symbol *sy = symbol_new(declarator_get_name($1),
-                                   declarator_type($1, type_int));
+    struct symbol *sy = symbol_new(declarator_get_name($1), SYM_FUNCTION,
+                                   declarator_type($1, type_int),
+                                   STO_STATIC);
     $$ = function_declare(sy, declarator_deepest_param_list($1), m);
 }
 ;

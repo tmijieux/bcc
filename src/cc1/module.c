@@ -77,11 +77,12 @@ static int module_add_default_prototype(struct module *m)
 {
     struct symbol *param, *fun;
     
-    param = symbol_new("size", type_long);
+    param = symbol_new("size", SYM_VARIABLE, type_long, STO_AUTO);
     param->variable.is_parameter = true;
     const struct list *paramlist = list_new(LI_ELEM, param, NULL);
     const struct type *ftype = type_get_function_type(type_generic, paramlist);
-    fun = function_declare(symbol_new("GC_malloc", ftype), paramlist, m);
+    fun = function_declare(symbol_new("GC_malloc", SYM_FUNCTION,
+                                      ftype, STO_EXTERN), paramlist, m);
     module_add_prototype(m, fun);
 
     return 0;
@@ -153,8 +154,8 @@ void module_add_global(struct module *m, struct symbol *sym, bool extern_)
     assert(sym->type->type != TYPE_UNDEF);
 
     sym->suffix = "input.global";
-    sym->variable.is_global = 1;
-
+    assert(symbol_is_global(sym));
+        
     char *code;
     asprintf(&code, "%s =%s global %s %s\n",
 	     symbol_fully_qualified_name(sym),

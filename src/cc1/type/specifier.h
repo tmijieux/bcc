@@ -29,10 +29,13 @@ enum specifier_type {
 
 
 #include "../util/list.h"
+#include "type.h"
 
 struct specifier *specifier_new(enum specifier_type specifier_type);
-struct specifier *specifier_typename(const char *typename);
+struct specifier *specifier_typename(const struct type *typename);
 const struct type *specifier_list_get_type(const struct list *specifiers);
+enum symbol_storage
+specifier_list_get_storage_class(const struct list *specifiers);
 int check_declaration_specifiers(struct list *declarator_specifiers);
     
 #endif //SPECIFIER_H

@@ -88,6 +88,14 @@ int yyerror(const char *s)
 
     fputs(color("fushia", pointer), ERROR_OUTPUT);
     fputs(color("fushia", "^\n"), ERROR_OUTPUT);
+
+
+    #ifndef NDEBUG
+    st_dump();
+
+    #endif
+
+
     
     return 0;
 }

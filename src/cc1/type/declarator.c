@@ -131,33 +131,35 @@ const char *declarator_get_name(const struct declarator *de)
     return de->value.identifier;
 }
 
-
 struct decl2sym_args {
     const struct type *base_type;
+    enum symbol_storage ssto;
 };
-
-
-struct symbol *declarator_to_symbol(struct declarator *declarator,
-                                    const struct type *base_type)
-{
-    const char *name = declarator_get_name(declarator);
-    
-    struct symbol *sym = symbol_new(name, declarator_type(declarator, base_type));
-    return sym;
-}
-
 
 static void *to_symbol_add_table__(void *list_elem, void *additional_arg)
 {
     struct declarator *decl = list_elem;
     struct decl2sym_args *args = additional_arg;
-
-    struct symbol *sym = declarator_to_symbol(decl, args->base_type);
-
-    sym->symbol_type = SYM_VARIABLE;
-    if (!st_add( sym)) {
-        error("symbol multiple definition: %s \n", sym->name);
+    enum symbol_type st;
+    
+    if (STO_TYPEDEF == args->ssto)
+        st = SYM_TYPENAME;
+    else {
+        if (DECLARATOR_ARRAY == decl->declarator_type)
+            st = SYM_ARRAY;
+        else if (DECLARATOR_FUNCTION == decl->declarator_type)
+            st = SYM_FUNCTION;
+        else
+            st = SYM_VARIABLE;
     }
+    
+    struct symbol *sym =
+        symbol_new(declarator_get_name(decl), st,
+                   declarator_type(decl, args->base_type),
+                   args->ssto);
+
+    if (!st_add(sym))
+        error("symbol multiple definition: %s \n", sym->name);
     return sym;
 }
 
@@ -173,23 +175,21 @@ int declarator_process_list(struct list *declaration_specifiers,
 
     struct decl2sym_args d2a;
     d2a.base_type = base_type;
+    d2a.ssto = specifier_list_get_storage_class(declaration_specifiers);
     *ret_list = list_map_r(declarator, &to_symbol_add_table__, &d2a);
-
     return 0;
 }
-
 
 static void *to_symbol_param__(void *list_elem)
 {
     struct declarator *decl = list_elem;
 
     assert(DECLARATOR_SPECIFIER == decl->declarator_type);
-    struct symbol *sym = symbol_new(declarator_get_name(decl),
-                                    declarator_type(decl, NULL));
+    struct symbol *sym = symbol_new(declarator_get_name(decl), SYM_VARIABLE,
+                                    declarator_type(decl, NULL),
+                                    STO_AUTO);
 
-    sym->symbol_type = SYM_VARIABLE;
     sym->variable.is_parameter = true;
-    
     return sym;
 }
 

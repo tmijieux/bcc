@@ -15,7 +15,7 @@
 #define INIT_TYPE(ty, TY)                                          \
     *((const struct type**)&type_##ty) = type_new(TYPE_##TY);      \
     *((const struct type**)&type_##ty##_v) = type_new(TYPE_##TY);  \
-    ht_add_entry(type_table, #ty, type_##ty);                      \
+    ht_add_entry(type_table, #ty, (void*)type_##ty);               \
     ((struct type*)type_##ty##_v)->is_vector = true;               \
 
 static struct type *type_new(enum type_type t);
@@ -424,7 +424,7 @@ static const struct type *type_get_or_create(const struct type *t)
     
     if (ht_get_entry(type_table, key, &already_existing) == 0)
         return already_existing;
-    ht_add_entry(type_table, key, t);
+    ht_add_entry(type_table, key, (void*)t);
     return t;
 }
 

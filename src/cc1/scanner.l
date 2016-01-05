@@ -24,7 +24,9 @@ static void count(void);
 static void comment(void);
 static int check_type(void);
 static void line_marker(void);
-extern char *yyfilename;
+
+char *yyfilename = "<stdin>";
+
 void newline();
 
 %}
@@ -217,14 +219,18 @@ static void count(void)
 
 static int check_type(void)
 {
+    struct symbol *may_be_typedef = NULL;
+    
+ 
+    if (st_search(yytext, &may_be_typedef) == 1) {
+        debug("found symbol %s : may be typename", yytext);
+        if (symbol_is_typename(may_be_typedef)) {
+            debug("success!! symbol %s is typename", yytext);
+            yylval.type = symbol_get_type(may_be_typedef);
+            return TOKEN_TYPE_NAME;
+        }
+    }
     yylval.string = strdup(yytext);
-/*
-* pseudo code --- this is what it should check
-*
-*       if (yytext == type_name)
-*               return(TOKEN_TYPE_NAME);
-*       it actually will only return IDENTIFIER
-*/
     return(TOKEN_IDENTIFIER);
 }
 
@@ -245,9 +251,10 @@ static void line_marker(void)
         yyfilename = strstrip2(filename);
         free(filename);
     } else {
-        fatal_error("cannot compile file with unprocessed preprocessor directives\n");
+        fatal_error("cannot compile file with unprocessed "
+                    "preprocessor directives\n");
     }
-//  debug("line_marker %d, %s\n", lineno, yyfilename);
+    //debug("line_marker %d, %s\n", lineno, yyfilename);
 }
 
 void newline()

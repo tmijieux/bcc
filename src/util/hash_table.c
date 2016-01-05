@@ -8,7 +8,7 @@
 
 struct ht_entry {
     char *key;
-    const void *data;
+    void *data;
     struct ht_entry *next;
 };
 
@@ -54,7 +54,7 @@ static int default_hash(const char *x)
     return *(int *) hh;
 }
 
-static struct ht_entry *new_entry(const char *key, const void *data)
+static struct ht_entry *new_entry(const char *key, void *data)
 {
     struct ht_entry *he = (struct ht_entry *) malloc(sizeof(*he));
     he->key = strdup(key);
@@ -86,7 +86,7 @@ struct hash_table *ht_create(size_t size, int (*hash) (const char *))
     return ht;
 }
 
-int ht_add_entry(struct hash_table *ht, const char *key, const void *data)
+int ht_add_entry(struct hash_table *ht, const char *key, void *data)
 {
     int hash = ht->hash(key);
     int pos = hash % ht->size;
@@ -173,6 +173,20 @@ void ht_free(struct hash_table *ht)
     }
 }
 
+void ht_for_each(struct hash_table* ht,
+		 void (*fun)(const char *, void*, void*), void *args)
+{
+    if (ht) {
+	for (int i = 0; i < ht->size; ++i) {
+	    struct ht_entry *he = ht->buf[i];
+	    while (he) {
+		fun(he->key, he->data, args);
+		he = he->next;
+	    }
+	}
+    }
+}
+
 struct list* ht_to_list(const struct hash_table *ht)
 {
     struct list *l = list_new(0);
@@ -187,3 +201,4 @@ struct list* ht_to_list(const struct hash_table *ht)
     }
     return l;
 }
+

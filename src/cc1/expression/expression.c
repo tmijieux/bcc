@@ -15,12 +15,11 @@ static struct symbol *stable_get(const char *name)
     struct symbol *sy = NULL;
     if (!st_search( name, &sy)) {
 	error("undefined reference to %s\n", name);
-	sy = symbol_new(name, type_generic);
+	sy = symbol_generic(name);
     }
 
     return sy;
 }
-
 
 static struct expression *expr_new(enum expression_type ext)
 {
@@ -78,7 +77,7 @@ static void cast_to_greatest_precision(struct expression *expr)
     }
 }
 
-const struct expression *expr_symbol(struct module * m, const char *identifier)
+const struct expression *expr_symbol(struct module *m, const char *identifier)
 {
     struct expression *expr = expr_new(EXPR_SYMBOL);
     expr->codegen = &expr_cg_symbol;
@@ -86,7 +85,7 @@ const struct expression *expr_symbol(struct module * m, const char *identifier)
     expr->symbol = stable_get(expr->identifier);
     expr->type = expr->symbol->type;
     
-    symbol_use(expr->symbol);
+    symbol_notice_use(expr->symbol);
     expr->source_code = strdup(identifier);
     
     if (type_generic == expr->type)
@@ -554,7 +553,7 @@ const struct expression *expr_unary(char c, const struct expression *e)
         break;
         
     default:
-        internal_error("unary operator '%c' not implemented", c);
+        internal_error("unary operator '%c' not implemented\n", c);
         break;
     }
 
