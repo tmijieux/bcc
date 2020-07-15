@@ -9,8 +9,7 @@ FLEX_TARGET(scanner scanner.l ${CMAKE_CURRENT_BINARY_DIR}/scanner.c)
 
 ADD_FLEX_BISON_DEPENDENCY(scanner parser)
 
-set(
-  CC1_SRC
+set(CC1_SRC
   ${BISON_parser_OUTPUTS}
   ${FLEX_scanner_OUTPUTS}
   codegen.h

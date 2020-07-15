@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "string2.h"
+#include "./string2.h"
 
 #define HEURISTIC_SIZE 11
 

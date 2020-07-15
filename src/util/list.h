@@ -1,8 +1,9 @@
-#ifndef LIST_H
-#define LIST_H
+#ifndef BCC_UTIL_LIST_H
+#define BCC_UTIL_LIST_H
 
 #include <stdlib.h>
 #include <assert.h>
+
 // FLAGS for list_new():
 #define LI_ELEM  (1 << 1)	// null terminated initializer list
 #define LI_FREE  (1 << 2)	// second argument is a free function for elements
@@ -13,15 +14,6 @@ struct list;
 // ! !
 // NUMBERED FROM 1 !!!!!!!!
 // ! !
-
-#define list_addg(typ, li, da)						\
-    ({ assert(sizeof typ < sizeof (void*)) ;				\
-	union { typ t; void *v}e; e.t = da; list_push(li, e.v);})
-
-
-#define list_getg(typ, li, i)						\
-    ({ assert(sizeof typ < sizeof (void*)) ;				\
-	union { typ t; void *v}e; e.v = list_get((li), (i)); e.t;})
 
 struct list *list_new(int flags, ...);
 void list_free(struct list*);
@@ -43,4 +35,4 @@ struct list *list_map(const struct list *l, void *(*fun)(void*));
 struct list *list_map_r(const struct list *l,
 			void *(*fun)(void*, void*), void *args);
 
-#endif //LIST_H
+#endif // BCC_UTIL_LIST_H

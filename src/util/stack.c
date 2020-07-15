@@ -1,8 +1,9 @@
 #include <stdlib.h>
 
-#include "stack.h"
+#include "./stack.h"
 
-struct stack {
+struct stack
+{
     unsigned int head;
     unsigned int buffer_size;
     STACK_TYPE buf[];
@@ -24,7 +25,8 @@ struct stack *stack_create(size_t buffer_size)
 
 void stack_push(struct stack *stack, STACK_TYPE element)
 {
-    if (!stack_is_full(stack)) {
+    if (!stack_is_full(stack))
+    {
 	stack->head++;
 	stack->buf[stack->head] = element;
     }
@@ -38,7 +40,8 @@ STACK_TYPE stack_peek(const struct stack *stack)
 STACK_TYPE stack_pop(struct stack * stack)
 {
     STACK_TYPE tmp;
-    if (!stack_is_empty(stack)) {
+    if (!stack_is_empty(stack))
+    {
 	tmp = stack->buf[stack->head];
 	stack->head--;
     }

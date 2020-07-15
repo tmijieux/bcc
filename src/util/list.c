@@ -1,11 +1,12 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "list.h"
-#include "list_node.h"
-#include "hash_table.h"
+#include "./list.h"
+#include "./list_node.h"
+#include "./hash_table.h"
 
-struct list {
+struct list
+{
     struct list_node *front_sentinel;
     struct list_node *last;
     void (*free_element)(void*);
@@ -19,12 +20,15 @@ static struct list_node *list_get_node(const struct list *list, unsigned int n)
 {
     unsigned int k = n;
     struct list_node *node = list->front_sentinel;
-    if (list->curpos <= k) {
+    if (list->curpos <= k)
+    {
 	k -= list->curpos;
 	node = list->cursor;
     }
     for (unsigned int i = 0; i < k; i++)
+    {
 	node = node_get_next(node);
+    }
     ((struct list*)list)->cursor = node;
     ((struct list*)list)->curpos = n;
     return node;
@@ -70,10 +74,13 @@ void list_free(struct list *list)
 {
     struct list_node *node = node_get_next(list->front_sentinel);
     struct list_node *tmp = NULL;
-    while (!node_is_sentinel(node)) {
+    while (!node_is_sentinel(node))
+    {
 	tmp = node_get_next(node);
 	if ((list->flags & LI_FREE) != 0)
+        {
 	    list->free_element((void*) node_get_data(node));
+        }
 	node_free(node);
 	node = tmp;
     }
@@ -122,7 +129,9 @@ void list_remove(struct list *list, unsigned int n)
     struct list_node *tmp = node_get_next(previous);
     node_set_next(previous, node_get_next(tmp));
     if ((list->flags & LI_FREE) != 0)
+    {
 	list->free_element((void*)node_get_data(tmp));
+    }
     node_free(tmp);
     list->size --;
 }
@@ -138,7 +147,9 @@ void *list_to_array(const struct list *l)
 {
     void **array = malloc(sizeof(*array) * l->size);
     for (int i = 0; i < l->size; ++i)
+    {
 	array[i] = list_get(l, i);
+    }
 
     return array;
 }
@@ -148,7 +159,8 @@ struct hash_table *list_to_hashtable(const struct list *l,
 {
     struct hash_table *ht = ht_create(2 * l->size, NULL);
 
-    for (int i = 0; i < l->size; ++i) {
+    for (int i = 0; i < l->size; ++i)
+    {
 	void *el = list_get(l, i);
 	ht_add_entry(ht, element_keyname(el), el);
     }
@@ -171,12 +183,14 @@ void list_each(const struct list *l, void (*fun)(void*))
 }
 
 struct list *list_map_r(const struct list *l,
-		      void *(*fun)(void*, void*), void *args)
+                        void *(*fun)(void*, void*), void *args)
 {
     int si = list_size(l);
     struct list *ret= list_new(0);
     for (int i = 1; i <= si; ++i)
+    {
 	list_append(ret, fun(list_get(l, i), args));
+    }
     return ret;
 }
 
@@ -184,5 +198,7 @@ void list_each_r(const struct list *l, void (*fun)(void*, void*), void *args)
 {
     int si = list_size(l);
     for (int i = 1; i <= si; ++i)
+    {
 	fun(list_get(l, i), args);
+    }
 }

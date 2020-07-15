@@ -1,7 +1,8 @@
 #ifndef BCC_CHAIN_H
 #define BCC_CHAIN_H
 
-enum c_compil_stage {
+enum c_compil_stage
+{
     CCS_PREPROCESSOR,     // cpp
     CCS_COMPILATION,      // cc1
     CCS_LLVM_OPT,         // opt

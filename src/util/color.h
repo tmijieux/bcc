@@ -1,5 +1,5 @@
-#ifndef COLOR_H
-#define COLOR_H
+#ifndef BCC_UTIL_COLOR_H
+#define BCC_UTIL_COLOR_H
 
 extern int COLOR_LEN;
 
@@ -22,4 +22,4 @@ extern int COLOR_LEN;
 
 const char *color(const char *col, const char *message);
 
-#endif	//COLOR_H
+#endif // BCC_UTIL_COLOR_H

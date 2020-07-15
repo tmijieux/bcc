@@ -1,9 +1,9 @@
-#ifndef HASH_TABLE_H
-#define HASH_TABLE_H
+#ifndef BCC_UTIL_HASH_TABLE_H
+#define BCC_UTIL_HASH_TABLE_H
 
 #include <stdlib.h>
 
-#include "list.h"
+#include "./list.h"
 
 struct hash_table;
 
@@ -19,4 +19,4 @@ void ht_for_each(struct hash_table* ht,
 		 void (*fun)(const char *, void*, void*), void *args);
 struct list* ht_to_list(const struct hash_table *ht);
 
-#endif	//HASH_TABLE_H
+#endif // BCC_UTIL_HASH_TABLE_H

@@ -1,5 +1,5 @@
-#ifndef STACK_H
-#define STACK_H
+#ifndef BCC_UTIL_STACK_H
+#define BCC_UTIL_STACK_H
 
 #include <stdlib.h>
 
@@ -19,4 +19,4 @@ int stack_is_empty(const struct stack *s);
 int stack_is_full(const struct stack *s);
 size_t stack_size(const struct stack *s);
 
-#endif	//STACK_H
+#endif // BCC_UTIL_STACK_H

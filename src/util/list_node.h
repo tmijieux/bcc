@@ -1,5 +1,5 @@
-#ifndef LIST_NODE_H
-#define LIST_NODE_H
+#ifndef BCC_UTIL_LIST_NODE_H
+#define BCC_UTIL_LIST_NODE_H
 
 #include <stdlib.h>
 
@@ -24,4 +24,4 @@ struct list_node {
 #define node_set_data(no, da)  ((no)->data = (da))
 #define node_is_sentinel(no)   ((no)->is_sentinel)
 
-#endif //LIST_NODE_H
+#endif // BCC_UTIL_LIST_NODE_H
