@@ -6,20 +6,27 @@
 
 static struct constant *constant_new(void)
 {
-    return calloc(sizeof*constant_new, 1);
+    struct constant *c;
+    c = calloc(sizeof*c, 1);
+    return c;
 }
 
 static struct constant *constant_str_integer(const char *string)
 {
     long value = 0;
     struct constant *cst = NULL;
-    
+
     value = strtol(string, NULL, 0);
     cst = constant_new();
     cst->type = type_long;
     cst->integer.longv.signed_ = value;
-    
+
     return cst;
+}
+
+struct constant *make_constant(const char *string)
+{
+    return constant_str_integer(string);
 }
 
 struct constant *constant_hex_integer(const char *string)

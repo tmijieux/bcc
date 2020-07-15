@@ -33,7 +33,7 @@ int check_declaration_specifiers(struct list *declarator_specifiers);
 %}
 /*
 
-%reentrant : 
+%reentrant :
 %pure-parser
 %locations
 %defines
@@ -45,12 +45,12 @@ int check_declaration_specifiers(struct list *declarator_specifiers);
 %expect 1
 
 %token <string> TOKEN_IDENTIFIER
-%token <constant> TOKEN_CONSTANT
+%token <string> TOKEN_CONSTANT
 %token <type> TOKEN_TYPE_NAME
-                        
+
 %token TOKEN_PTR_OP TOKEN_INC_OP TOKEN_DEC_OP TOKEN_LEFT_OP TOKEN_RIGHT_OP
 %token TOKEN_LE_OP TOKEN_GE_OP TOKEN_EQ_OP TOKEN_NE_OP
-                        
+
 %token TOKEN_AND_OP TOKEN_OR_OP TOKEN_MUL_ASSIGN TOKEN_DIV_ASSIGN
 %token TOKEN_MOD_ASSIGN TOKEN_ADD_ASSIGN TOKEN_SUB_ASSIGN TOKEN_LEFT_ASSIGN
 %token TOKEN_RIGHT_ASSIGN TOKEN_AND_ASSIGN TOKEN_XOR_ASSIGN TOKEN_OR_ASSIGN
@@ -84,7 +84,7 @@ int check_declaration_specifiers(struct list *declarator_specifiers);
 %type <expression> assignment_expression
 %type <expression> expression
 %type <expression> constant_expression
-                        
+
 %type <list> argument_expression_list
 %type <list> init_declarator_list
 %type <list> struct_declaration_list
@@ -102,7 +102,7 @@ int check_declaration_specifiers(struct list *declarator_specifiers);
 %type <list> declaration_specifiers
 %type <list> declaration
 %type <list> struct_declaration
-                        
+
 %type <statement> labeled_statement
 %type <statement> compound_statement
 %type <statement> expression_statement
@@ -157,7 +157,7 @@ int check_declaration_specifiers(struct list *declarator_specifiers);
 
 primary_expression
 : TOKEN_IDENTIFIER { $$ = expr_symbol(m, $1); }
-| TOKEN_CONSTANT { $$ = expr_constant($1); }
+| TOKEN_CONSTANT { $$ = expr_constant_from_str($1); }
 | '(' expression ')' { $$ = $2; }
 ;
 
@@ -165,14 +165,9 @@ postfix_expression
 : primary_expression { $$ = $1; }
 | postfix_expression '[' expression ']' { $$ = expr_array($1, $3); }
 | postfix_expression '(' ')' { $$ = expr_funcall($1, list_new(0)); }
-| postfix_expression '(' argument_expression_list ')'
-{ $$ = expr_funcall($1, $3); }
-
+| postfix_expression '(' argument_expression_list ')' { $$ = expr_funcall($1, $3); }
 | postfix_expression '.' TOKEN_IDENTIFIER { $$ = expr_struct_access($1, $3); }
-
-| postfix_expression TOKEN_PTR_OP TOKEN_IDENTIFIER
-{ $$ = expr_struct_deref($1, $3); }
-
+| postfix_expression TOKEN_PTR_OP TOKEN_IDENTIFIER { $$ = expr_struct_deref($1, $3); }
 | postfix_expression TOKEN_INC_OP { $$ = expr_post_inc($1); }
 | postfix_expression TOKEN_DEC_OP { $$ = expr_post_dec($1); }
 ;
@@ -207,8 +202,7 @@ cast_expression
 
 multiplicative_expression
 : cast_expression { $$ = $1; }
-| multiplicative_expression '*' cast_expression
-{ $$ = expr_multiplication($1, $3); }
+| multiplicative_expression '*' cast_expression { $$ = expr_multiplication($1, $3); }
 | multiplicative_expression '/' cast_expression { $$ = expr_division($1, $3); }
 | multiplicative_expression '%' cast_expression { $$ = expr_modulo($1, $3); }
 ;
@@ -216,8 +210,7 @@ multiplicative_expression
 additive_expression
 : multiplicative_expression { $$ = $1; }
 | additive_expression '+' multiplicative_expression { $$ = expr_addition($1, $3); }
-| additive_expression '-' multiplicative_expression
-{ $$ = expr_substraction($1, $3); }
+| additive_expression '-' multiplicative_expression { $$ = expr_substraction($1, $3); }
 ;
 
 shift_expression
@@ -230,10 +223,10 @@ shift_expression
 
 relational_expression
 : shift_expression { $$ = $1; }
-| relational_expression '<' shift_expression { $$ = expr_lower($1, $3); } 
-| relational_expression '>' shift_expression { $$ = expr_greater($1, $3); } 
-| relational_expression TOKEN_LE_OP shift_expression  { $$ = expr_leq($1, $3); } 
-| relational_expression TOKEN_GE_OP shift_expression { $$ = expr_geq($1, $3); } 
+| relational_expression '<' shift_expression { $$ = expr_lower($1, $3); }
+| relational_expression '>' shift_expression { $$ = expr_greater($1, $3); }
+| relational_expression TOKEN_LE_OP shift_expression  { $$ = expr_leq($1, $3); }
+| relational_expression TOKEN_GE_OP shift_expression { $$ = expr_geq($1, $3); }
 ;
 
 equality_expression
@@ -243,7 +236,7 @@ equality_expression
 ;
 
 and_expression
-: equality_expression { $$ = $1; } 
+: equality_expression { $$ = $1; }
 | and_expression '&' equality_expression { $$ = expr_and($1, $3); }
 ;
 
@@ -305,10 +298,14 @@ constant_expression
 ;
 
 declaration
-: declaration_specifiers ';'
-{ $$ = list_new(0);warning("declaration does not declare anything\n"); }
-| declaration_specifiers init_declarator_list ';' // beware of typedef storage class
-{ declarator_process_list($1, $2, &$$); }
+: declaration_specifiers ';' {
+    $$ = list_new(0);
+    warning("declaration does not declare anything\n");
+ }
+| declaration_specifiers init_declarator_list ';' {
+    // beware of typedef storage class
+    declarator_process_list($1, $2, &($$));
+ }
 ;
 
 declaration_specifiers
@@ -426,7 +423,7 @@ direct_declarator
 | direct_declarator '(' parameter_type_list ')'
 { $$ = declarator_function($1, $3); }
 | direct_declarator '(' identifier_list ')' // old style
-{ $$ = declarator_function_old($1, $3); } 
+{ $$ = declarator_function_old($1, $3); }
 | direct_declarator '(' ')' { $$ = declarator_function($1, list_new(0)); }
 ;
 
@@ -457,7 +454,7 @@ parameter_list
 parameter_declaration
 : declaration_specifiers declarator { $$ = declarator_specifier($2, $1); }
 | declaration_specifiers abstract_declarator { $$ = declarator_specifier($2, $1); }
-| declaration_specifiers { $$ = declarator_specifier(NULL, $1); } 
+| declaration_specifiers { $$ = declarator_specifier(NULL, $1); }
 ;
 
 identifier_list // old style function declaration only
@@ -578,7 +575,7 @@ translation_unit
 ;
 
 external_declaration
-: function_definition 
+: function_definition
 | declaration { // maybe handle typedef at this level
     int si = list_size($1);
     for (int i = 1; i <= si; ++i)

@@ -8,30 +8,22 @@
 #include "../util/hash_table.h"
 #include "errorc.h"
 
-#define DEFINE_TYPE(ty)                                 \
-    const struct type*const type_##ty;                  \
-    const struct type* const type_##ty##_v;		\
-    
-#define INIT_TYPE(ty, TY)                                          \
-    *((const struct type**)&type_##ty) = type_new(TYPE_##TY);      \
-    *((const struct type**)&type_##ty##_v) = type_new(TYPE_##TY);  \
-    ht_add_entry(type_table, #ty, (void*)type_##ty);               \
-    ((struct type*)type_##ty##_v)->is_vector = true;               \
+
 
 static struct type *type_new(enum type_type t);
 
-DEFINE_TYPE(undef);
-DEFINE_TYPE(generic);
+const struct type* type_undef;
+const struct type* type_generic;
 
-DEFINE_TYPE(bool);
-DEFINE_TYPE(char);
-DEFINE_TYPE(short);
-DEFINE_TYPE(int);
-DEFINE_TYPE(long);
+const struct type* type_bool;
+const struct type* type_char;
+const struct type* type_short;
+const struct type* type_int;
+const struct type* type_long;
 
-DEFINE_TYPE(float);
-DEFINE_TYPE(double);
-DEFINE_TYPE(void);
+const struct type* type_float;
+const struct type* type_double;
+const struct type* type_void;
 
 static int type_precision__[] = {
     [TYPE_UNDEF] = -1,
@@ -45,7 +37,7 @@ static int type_precision__[] = {
     [TYPE_SHORT] = 20,
     [TYPE_INT] = 30,
     [TYPE_LONG] = 40,
-    
+
     [TYPE_FLOAT] = 50,
     [TYPE_DOUBLE] = 60
 };
@@ -53,13 +45,13 @@ static int type_precision__[] = {
 static size_t type_size__[] = {
     [TYPE_UNDEF] = 0,
     [TYPE_VOID] = 0,
-    
+
     [TYPE_BOOL] = 1,
     [TYPE_CHAR] = 1,
     [TYPE_SHORT] = 2,
     [TYPE_INT] = 4,
     [TYPE_LONG] = 8,
-    
+
     [TYPE_FLOAT] = 4,
     [TYPE_DOUBLE] = 8,
     [TYPE_ARRAY] = 8,
@@ -86,27 +78,34 @@ static struct hash_table *type_table;
  *  it encounters a declarator
  */
 const struct type *last_type_name = NULL;
-const struct type *last_function_return_type;
+const struct type *last_function_return_type = NULL;
 
 /***************************************************/
 
-__attribute__ ((constructor))
-static void type_init(void)
+static void init_type(const struct type **type_var,
+                      const char *type_name,
+                      enum type_type type_type)
+{
+    *type_var = type_new(type_type);
+    ht_add_entry(type_table, type_name, *type_var);
+}
+
+void type_init(void)
 {
     type_table = ht_create(0, NULL);
-    
-    INIT_TYPE(undef, UNDEF);
-    INIT_TYPE(generic, GENERIC);
 
-    INIT_TYPE(bool, BOOL);
-    INIT_TYPE(char, CHAR);
-    INIT_TYPE(short, SHORT);
-    INIT_TYPE(int, INT);
-    INIT_TYPE(long, LONG);
-    
-    INIT_TYPE(float, FLOAT);
-    INIT_TYPE(double, DOUBLE);
-    INIT_TYPE(void, VOID);
+    init_type(&type_undef, "undef", TYPE_UNDEF);
+    init_type(&type_generic, "generic", TYPE_GENERIC);
+
+    init_type(&type_bool, "bool", TYPE_BOOL);
+    init_type(&type_char, "char", TYPE_CHAR);
+    init_type(&type_short, "short", TYPE_SHORT);
+    init_type(&type_int, "int", TYPE_INT);
+    init_type(&type_long, "long", TYPE_LONG);
+
+    init_type(&type_float, "float", TYPE_FLOAT);
+    init_type(&type_double, "double", TYPE_DOUBLE);
+    init_type(&type_void, "void", TYPE_VOID);
 
     last_type_name = type_generic;
     last_function_return_type = type_generic;
@@ -234,46 +233,46 @@ const char *type_printable(const struct type *t)
     char *printable = "type_printable_unimplemented";
 
     switch (t->type) {
-    case TYPE_UNDEF:
-	printable = "undef";
-	break;
-    case TYPE_GENERIC:
-	printable = "generic";
-	break;
-    case TYPE_VOID:
-	printable = "void";
-	break;
-    case TYPE_BOOL:
-	printable = "bool";
-	break;
-    case TYPE_CHAR:
-	printable = "char";
-	break;
+        case TYPE_UNDEF:
+            printable = "undef";
+            break;
+        case TYPE_GENERIC:
+            printable = "generic";
+            break;
+        case TYPE_VOID:
+            printable = "void";
+            break;
+        case TYPE_BOOL:
+            printable = "bool";
+            break;
+        case TYPE_CHAR:
+            printable = "char";
+            break;
 
-    case TYPE_SHORT:
-	printable = "short";
-	break;
-    case TYPE_INT:
-	printable = "int";
-	break;
-    case TYPE_LONG:
-	printable = "long";
-	break;
+        case TYPE_SHORT:
+            printable = "short";
+            break;
+        case TYPE_INT:
+            printable = "int";
+            break;
+        case TYPE_LONG:
+            printable = "long";
+            break;
 
-    case TYPE_FLOAT:
-	printable = "float";
-	break;
-    case TYPE_DOUBLE:
-	printable = "double";
-	break;
+        case TYPE_FLOAT:
+            printable = "float";
+            break;
+        case TYPE_DOUBLE:
+            printable = "double";
+            break;
 
-    case TYPE_ARRAY:
-    case TYPE_FUNCTION:
-    case TYPE_POINTER:
-        return type_printable_aux(t, "");
-	break;
-    default:
-	break;
+        case TYPE_ARRAY:
+        case TYPE_FUNCTION:
+        case TYPE_POINTER:
+            return type_printable_aux(t, "");
+            break;
+        default:
+            break;
     }
     return printable;
 }
@@ -281,28 +280,28 @@ const char *type_printable(const struct type *t)
 const char *type_printable_aux(const struct type *t, char *printable)
 {
     switch (t->type) {
-    case TYPE_ARRAY:
-	asprintf(&printable, "%s[%s]", printable,
-                 str_expression_size(t->array_type.array_size));
-        return type_printable_aux(type_array_values(t), printable);
-	break;
-    case TYPE_FUNCTION:
-	asprintf(&printable, "(%s)(%s)", printable,
-                 type_arglist(t->function_type.argv));
-        return type_printable_aux(type_function_return(t), printable);
-	break;
-    case TYPE_POINTER:
-        asprintf(&printable, "*%s", printable);
-        return type_printable_aux(type_pointer_star(t), printable);
-        break;
-        
-    default:
-	asprintf(&printable, "%s %s", type_printable(t), printable);
-        return printable;
-	break;
+        case TYPE_ARRAY:
+            asprintf(&printable, "%s[%s]", printable,
+                     str_expression_size(t->array_type.array_size));
+            return type_printable_aux(type_array_values(t), printable);
+            break;
+        case TYPE_FUNCTION:
+            asprintf(&printable, "(%s)(%s)", printable,
+                     type_arglist(t->function_type.argv));
+            return type_printable_aux(type_function_return(t), printable);
+            break;
+        case TYPE_POINTER:
+            asprintf(&printable, "*%s", printable);
+            return type_printable_aux(type_pointer_star(t), printable);
+            break;
+
+        default:
+            asprintf(&printable, "%s %s", type_printable(t), printable);
+            return printable;
+            break;
     }
 
-    return printable;    
+    return printable;
 }
 
 static const char *type_arglist(const struct list *l)
@@ -321,7 +320,7 @@ bool type_equal(const struct type *t1, const struct type *t2)
 {
     if (t1 == t2)
 	return true;
-   
+
     if (t1->type != t2->type) {
 	if (t1 == type_generic || t2 == type_generic)
 	    return true;
@@ -421,7 +420,7 @@ static const struct type *type_get_or_create(const struct type *t)
 {
     const struct type *already_existing = NULL;
     const char *key = type_printable(t);
-    
+
     if (ht_get_entry(type_table, key, &already_existing) == 0)
         return already_existing;
     ht_add_entry(type_table, key, (void*)t);

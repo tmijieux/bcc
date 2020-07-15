@@ -1,28 +1,23 @@
-#ifndef STORAGE_CLASS_H
-#define STORAGE_CLASS_H
+#ifndef BCC_STORAGE_CLASS_H
+#define BCC_STORAGE_CLASS_H
 
 struct storage_class {
-    
+
     enum storage_class_type {
-        sto_global,
-        sto_static,
-        sto_auto,
-        sto_register,
-
+        STO_GLOBAL,
+        STO_STATIC,
+        STO_AUTO,
+        STO_REGISTER,
     };
-
 };
 
 
 struct visibility {
     enum visibility_type {
-        vis_default, // global
-        vis_hidden,
-        vis_protected,
-        
-
+        VIS_DEFAULT, // global
+        VIS_HIDDEN,
+        VIS_PROTECTED,
     };
-
 };
 
 struct linkage {
@@ -41,4 +36,4 @@ struct linkage {
     };
 };
 
-#endif //STORAGE_CLASS_H
+#endif // BCC_STORAGE_CLASS_H

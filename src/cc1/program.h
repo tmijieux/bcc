@@ -1,6 +1,6 @@
-#ifndef PROGRAM_H
-#define PROGRAM_H
+#ifndef BCC_PROGRAM_H
+#define BCC_PROGRAM_H
 
 unsigned int prgm_get_unique_id(void);
 
-#endif	//PROGRAM_H
+#endif // BCC_PROGRAM_H

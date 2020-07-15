@@ -1,5 +1,5 @@
-#ifndef ERROR_H
-#define ERROR_H
+#ifndef BCC_ERROR_H
+#define BCC_ERROR_H
 
 #ifndef ERROR_OUTPUT
 #define ERROR_OUTPUT stderr
@@ -20,4 +20,4 @@ void debugi(const char *format, ...);
 #define debug
 #endif
 
-#endif	//ERROR_H
+#endif	// BCC_ERROR_H

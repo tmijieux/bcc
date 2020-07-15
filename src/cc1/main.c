@@ -5,6 +5,7 @@
 #include "program.h"
 #include "module.h"
 #include "function.h"
+#include "type/type.h"
 
 #include "symbol/symbol_table.h"
 #include "util/error.h"
@@ -16,6 +17,8 @@ extern char *yyfilename;
 
 int main(int argc, char *argv[])
 {
+    type_init();
+
     int err = 0;
     error_set_program_name(argv[0]);
 
@@ -23,7 +26,7 @@ int main(int argc, char *argv[])
     m = module_new(yyfilename);
     yyin = stdin;
     yyparse();
-    
+
     err = error_count();
     if (!err)
         module_print(m, stdout);

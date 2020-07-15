@@ -1,15 +1,15 @@
-#ifndef CHAIN_H
-#define CHAIN_H
+#ifndef BCC_CHAIN_H
+#define BCC_CHAIN_H
 
 enum c_compil_stage {
-    ccs_preprocessor,     // cpp
-    ccs_compilation,      // cc1
-    ccs_llvm_opt,         // opt
-    ccs_llvm_compilation, // llc
-    ccs_assembly,         // as
-    ccs_linking,          // ld
-    
-    ccs_numstage,   // must be last
+    CCS_PREPROCESSOR,     // cpp
+    CCS_COMPILATION,      // cc1
+    CCS_LLVM_OPT,         // opt
+    CCS_LLVM_COMPILATION, // llc
+    CCS_ASSEMBLY,         // as
+    CCS_LINKING,          // ld
+
+    CCS_NUMSTAGE,   // must be last
 };
 
 #include "option.h"
@@ -19,4 +19,4 @@ void split_extension(const char *filename__, char *file_extension[2]);
 int compile_chain(const char *filename, const struct bcc_option *bopt);
 const char * extension_by_stage(unsigned int stage);
 
-#endif //CHAIN_H
+#endif // BCC_CHAIN_H

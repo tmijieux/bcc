@@ -1,5 +1,5 @@
-#ifndef SYMBOL_H
-#define SYMBOL_H
+#ifndef BCC_SYMBOL_H
+#define BCC_SYMBOL_H
 
 struct symbol;
 
@@ -56,7 +56,7 @@ struct symbol_variable {
 };
 
 struct symbol_function {
-    
+
 };
 
 struct symbol_typename {
@@ -107,4 +107,4 @@ bool symbol_used(const struct symbol *sy);
 void symbol_debug_print(const struct symbol *sy);
 
 
-#endif	//SYMBOL_H
+#endif // BCC_SYMBOL_H

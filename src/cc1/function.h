@@ -1,5 +1,5 @@
-#ifndef FUNCTION_H
-#define FUNCTION_H
+#ifndef BCC_FUNCTION_H
+#define BCC_FUNCTION_H
 
 #include "module.h"
 #include "symbol/symbol.h"
@@ -29,4 +29,4 @@ struct symbol *
 function_declare(struct symbol *declarator,
                  const struct list *param_list, struct module *m);
 
-#endif	//FUNCTION_H
+#endif // BCC_FUNCTION_H

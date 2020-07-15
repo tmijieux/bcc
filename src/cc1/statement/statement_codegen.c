@@ -33,8 +33,9 @@ static const char *stmt_get_code(void *st)
 static const char *symb_get_init_code(void *st)
 {
     struct symbol *s = st;
-    assert (s->variable.is_parameter == true);
-    return s->variable.init_code;
+    if (s->variable.is_parameter)
+        return s->variable.init_code;
+    return "";
 }
 
 const char *decl_init_list(const struct list *l)

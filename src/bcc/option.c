@@ -27,39 +27,50 @@ void print_version(void)
     printf("version\n");
 }
 
-void bopt_init(struct bcc_option *bopt)
+void opt_init(struct bcc_option *opt)
 {
-    memset(bopt, 0, sizeof*bopt);
+    memset(opt, 0, sizeof*opt);
 
-    bopt->last_stage = ccs_linking;
-    bopt->cpp_arg = list_new(0);
-    bopt->cc1_arg = list_new(0);
-    bopt->opt_arg = list_new(0);
-    bopt->llc_arg = list_new(0);
-    bopt->gas_arg = list_new(0);
+    opt->last_stage = CCS_LINKING;
+    opt->cpp_arg = list_new(0);
+    opt->cc1_arg = list_new(0);
+    opt->opt_arg = list_new(0);
+    opt->llc_arg = list_new(0);
+    opt->gas_arg = list_new(0);
 }
 
-#define set_last_stage(first_stop__, second_stop__, optcharstr__)       \
-    do {                                                                \
-        if (NULL != optarg) {                                           \
-            if (!strcmp(optarg, "1")) {                                 \
-                bopt->last_stage = first_stop__;                        \
-            } else if (!strcmp(optarg, "2")) {                          \
-                bopt->last_stage = second_stop__;                       \
-            } else {                                                    \
-                internal_fatal_error("argument to -"optcharstr__        \
-                                     " option must be 1 or 2\n");       \
-            }                                                           \
-        } else {                                                        \
-            bopt->last_stage = second_stop__;                           \
-        }                                                               \
-    } while (0)                                                         \
+void set_last_stage(struct bcc_option *opt,
+                      enum c_compil_stage first_stop,
+                      enum c_compil_stage second_stop,
+                      const char *optcharstr)
+{
 
-int parse_options(int *argc, char ***argv, struct bcc_option *bopt)
+    if (optarg != NULL)
+    {
+        if (!strcmp(optarg, "1"))
+        {
+            opt->last_stage = first_stop;
+        }
+        else if (!strcmp(optarg, "2"))
+        {
+            opt->last_stage = second_stop;
+        }
+        else
+        {
+            internal_fatal_error("argument to -%s option must be 1 or 2\n", optcharstr);
+        }
+    }
+    else
+    {
+        opt->last_stage = second_stop;
+    }
+}
+
+int parse_options(int *argc, char ***argv, struct bcc_option *opt)
 {
     char c;
     opterr = 0;
-    
+
     const char *optstring = "ES::c::o:h::vxI:L:l::";
     while ((c = getopt_long(*argc, *argv, optstring, option, NULL)) != -1) {
 	switch (c) {
@@ -72,32 +83,32 @@ int parse_options(int *argc, char ***argv, struct bcc_option *bopt)
             exit(EXIT_FAILURE);
             break;
         case 'o':
-            bopt->output = strdup(optarg);
+            opt->output = strdup(optarg);
             break;
         case 'E':
-            set_last_stage(ccs_llvm_opt, ccs_preprocessor, "c");
+            set_last_stage(opt, CCS_LLVM_OPT, CCS_PREPROCESSOR, "c");
             break;
         case 'c':
-            set_last_stage(ccs_llvm_opt, ccs_assembly, "o");
+            set_last_stage(opt, CCS_LLVM_OPT, CCS_ASSEMBLY, "o");
             break;
         case 'S':
-            set_last_stage(ccs_compilation, ccs_llvm_compilation, "S");
+            set_last_stage(opt, CCS_COMPILATION, CCS_LLVM_COMPILATION, "S");
             break;
         case 'I':
-            list_append(bopt->cpp_arg, "I");
-            list_append(bopt->cpp_arg, strdup(optarg));
+            list_append(opt->cpp_arg, "I");
+            list_append(opt->cpp_arg, strdup(optarg));
             // pass option to cpp
             break;
         case 'L':
-            list_append(bopt->gas_arg, "L");
-            list_append(bopt->gas_arg, strdup(optarg));
+            list_append(opt->gas_arg, "L");
+            list_append(opt->gas_arg, strdup(optarg));
             // pass option to ld
             break;
         case 'l':
             if (NULL != optarg) {
                 char *str;
                 asprintf(&str, "-l%s", optarg);
-                list_append(bopt->gas_arg, str);
+                list_append(opt->gas_arg, str);
             } else {
                 internal_error("missing argument to option `-l´\n");
             }
@@ -120,17 +131,17 @@ int parse_options(int *argc, char ***argv, struct bcc_option *bopt)
 
     return 0;
 }
-#undef set_last_stage
 
-int last_stage_by_option(const struct bcc_option *bopt)
+int last_stage_by_option(const struct bcc_option *opt)
 {
-    return bopt->last_stage;
+    return opt->last_stage;
 }
 
-void option_check(const struct bcc_option *bopt, int file_count)
+void option_check(const struct bcc_option *opt, int file_count)
 {
-    if (file_count >= 2 && NULL != bopt->output &&
-        ccs_linking != bopt->last_stage)
+    if (file_count >= 2
+        && NULL != opt->output
+        && CCS_LINKING != opt->last_stage)
     {
         internal_fatal_error(
             "-E, -c and -S cannot be combined with -o "

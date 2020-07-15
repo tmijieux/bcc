@@ -43,16 +43,16 @@ static void check_main_prototype(struct symbol *main);
 struct module *module_new(const char *module_name)
 {
     struct module *m = calloc(sizeof *m, 1);
-    
+
     m->funtable = ht_create(0, NULL);
     m->funlist = list_new(0);
-    
+
     m->protolist = list_new(0);
     m->globlist = list_new(0);
 
     m->name = module_name;
     module_add_default_prototype(m);
-    
+
     return m;
 }
 
@@ -69,14 +69,14 @@ module_get_or_create_function(struct module *m, struct symbol *sym)
             check_main_prototype(sym);
         }
     }
-    
+
     return fun;
 }
 
 static int module_add_default_prototype(struct module *m)
 {
     struct symbol *param, *fun;
-    
+
     param = symbol_new("size", SYM_VARIABLE, type_long, STO_AUTO);
     param->variable.is_parameter = true;
     const struct list *paramlist = list_new(LI_ELEM, param, NULL);
@@ -100,7 +100,7 @@ void module_print(struct module *m, FILE * out)
     si = list_size(m->protolist);
 //    debug("protolist size: %d\n", si);
     for (int i = 1; i <= si; ++i) {
-        
+
 	struct prototype *pt = list_get(m->protolist, i);
 	struct function *f = NULL;
 	ht_get_entry(m->funtable, pt->name, &f);
@@ -118,7 +118,7 @@ void module_print(struct module *m, FILE * out)
         fprintf(out, "%s = private unnamed_addr constant [%zu x i8] c\"%s\\00\"",
                 lit->reg, lit->length, lit->value);
     }
-    
+
     fputs("\n", out);
     si = list_size(m->globlist);
     for (int i = 1; i <= si; ++i)
@@ -155,7 +155,7 @@ void module_add_global(struct module *m, struct symbol *sym, bool extern_)
 
     sym->suffix = "input.global";
     assert(symbol_is_global(sym));
-        
+
     char *code;
     asprintf(&code, "%s =%s global %s %s\n",
 	     symbol_fully_qualified_name(sym),
@@ -189,12 +189,12 @@ static void check_main_prototype(struct symbol *main)
         return;
     }
 
-    
-    
+
+
     const struct list *l = type_function_argv(main->type);
     const struct type *t1, *t2, *t3;
     switch (argc) {
-        
+
     case 2:
         t1 = ((struct symbol*)list_get(l, 1))->type;
         t2 = ((struct symbol*)list_get(l, 2))->type;
@@ -207,7 +207,7 @@ static void check_main_prototype(struct symbol *main)
             return;
         }
 
-        
+
         break;
 
     case 3:
@@ -227,7 +227,7 @@ static void check_main_prototype(struct symbol *main)
             return;
         }
         break;
-        
+
     default:
         break;
     }

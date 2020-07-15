@@ -1,5 +1,5 @@
-#ifndef CODEGEN_H
-#define CODEGEN_H
+#ifndef BCC_CODEGEN_H
+#define BCC_CODEGEN_H
 
 #include "function.h"
 
@@ -17,4 +17,4 @@ void expr_cg(const struct expression *);
 void stmt_cg(const struct statement *);
 void fun_cg(struct function *);
 
-#endif	//CODEGEN_H
+#endif // BCC_CODEGEN_H

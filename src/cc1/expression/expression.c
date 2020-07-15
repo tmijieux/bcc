@@ -5,6 +5,7 @@
 
 #include "expression.h"
 #include "expression_codegen.h"
+#include "../constant/constant.h"
 #include "../constant/string_literal.h"
 #include "../util/error.h"
 #include "../util/color.h"
@@ -84,14 +85,19 @@ const struct expression *expr_symbol(struct module *m, const char *identifier)
     expr->identifier = identifier;
     expr->symbol = stable_get(expr->identifier);
     expr->type = expr->symbol->type;
-    
+
     symbol_notice_use(expr->symbol);
     expr->source_code = strdup(identifier);
-    
+
     if (type_generic == expr->type)
         return expr;
 
     return expr;
+}
+const struct expression *expr_constant_from_str(const char *constant_str)
+{
+    struct constant *cst = make_constant(constant_str);
+    return expr_constant(cst);
 }
 
 const struct expression *expr_constant(struct constant *cst)
@@ -219,22 +225,22 @@ static const struct expression *xcrement(enum expression_type et,
     return expr;
 }
 
-const struct expression *expr_post_dec(const const struct expression *op)
+const struct expression *expr_post_dec(const struct expression *op)
 {
     return xcrement(EXPR_POST_DEC, op, "decrement");
 }
 
-const struct expression *expr_pre_dec(const const struct expression *op)
+const struct expression *expr_pre_dec(const struct expression *op)
 {
     return xcrement(EXPR_PRE_DEC, op, "decrement");
 }
 
-const struct expression *expr_post_inc(const const struct expression *op)
+const struct expression *expr_post_inc(const struct expression *op)
 {
     return xcrement(EXPR_POST_INC, op, "increment");
 }
 
-const struct expression *expr_pre_inc(const const struct expression *op)
+const struct expression *expr_pre_inc(const struct expression *op)
 {
     return xcrement(EXPR_PRE_INC, op, "increment");
 }
@@ -282,7 +288,7 @@ static const struct expression *operation(enum expression_type et,
     return expr;
 }
 
-const struct expression *expr_neq(const const struct expression *lop,
+const struct expression *expr_neq(const struct expression *lop,
 				  const struct expression *rop)
 {
     return operation(EXPR_NEQ, "comparison", lop, rop);
@@ -435,7 +441,7 @@ const struct expression *expr_assignment(const struct expression *lop,
         internal_error("assignment bad operator: %c\n", op);
         break;
     };
-    
+
     struct expression *expr = expr_new(EXPR_ASSIGNMENT);
     expr->left_operand = lop;
     expr->right_operand = rop;
@@ -551,7 +557,7 @@ const struct expression *expr_unary(char c, const struct expression *e)
     case '-':
         return expr_unary_minus(e);
         break;
-        
+
     default:
         internal_error("unary operator '%c' not implemented\n", c);
         break;

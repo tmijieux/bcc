@@ -39,7 +39,7 @@ struct list *list_new(int flags, ...)
 {
     struct list *list = calloc(sizeof(*list), 1);
     list->front_sentinel = node_new(NULL, SENTINEL_NODE);
-    node_set_next(list->front_sentinel, node_new(NULL, 1));
+    node_set_next(list->front_sentinel, node_new(NULL, SENTINEL_NODE));
     list->flags = flags;
     list->cursor = list->front_sentinel;
     list->curpos = 0;
@@ -48,15 +48,21 @@ struct list *list_new(int flags, ...)
     va_list ap;
     va_start(ap, flags);
     if ((flags & LI_FREE) != 0)
+    {
 	list->free_element = va_arg(ap, void(*)(void*));
-    if ((flags & LI_ELEM) != 0) {
+    }
+
+    if ((flags & LI_ELEM) != 0)
+    {
 	void *arg;
 	do {
 	    arg = va_arg(ap, void*);
-	    if (arg != NULL) list_append(list, arg);
+	    if (arg != NULL)
+            {
+                list_append(list, arg);
+            }
 	} while (NULL != arg);
     }
-
     return list;
 }
 

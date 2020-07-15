@@ -1,5 +1,5 @@
-#ifndef STATEMENT_H
-#define STATEMENT_H
+#ifndef BCC_STATEMENT_H
+#define BCC_STATEMENT_H
 
 #include "../util/list.h"
 #include "../expression/expression.h"
@@ -94,5 +94,5 @@ struct statement *stmt_case(struct statement *stmt,
                             const struct expression *const_expr);
 struct statement *stmt_default(struct statement *stmt);
 
-    
-#endif	//STATEMENT_H
+
+#endif // BCC_STATEMENT_H

@@ -1,6 +1,6 @@
 LEX=lex
 YACC=bison
-CFLAGS=-Wall -std=gnu99 -I. -I.. -O0 -ggdb -D_GNU_SOURCE
+CFLAGS=-Wall -Wextra -std=gnu99 -I. -I.. -O0 -ggdb -D_GNU_SOURCE
 LDFLAGS=-L. -L../util -lutil
 CC=cc
 TARGET=cc1

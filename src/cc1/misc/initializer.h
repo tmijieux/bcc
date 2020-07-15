@@ -1,5 +1,5 @@
-#ifndef INITIALIZER_H
-#define INITIALIZER_H
+#ifndef BCC_INITIALIZER_H
+#define BCC_INITIALIZER_H
 
 struct initializer;
 
@@ -12,4 +12,4 @@ initializer_expression(const struct expression *expression);
 struct initializer *
 initializer_list(const struct list *initializer_list);
 
-#endif //INITIALIZER_H
+#endif // BCC_INITIALIZER_H

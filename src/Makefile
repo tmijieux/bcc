@@ -1,7 +1,8 @@
-all: 
+all:
+	make -C util/
 	make -C bcc/
 	make -C cc1/
-	make -C util/
+
 
 clean:
 	find . -name '*.o' | xargs $(RM)

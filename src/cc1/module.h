@@ -1,10 +1,11 @@
-#ifndef MODULE_H
-#define MODULE_H
+#ifndef BCC_MODULE_H
+#define BCC_MODULE_H
+
+#include <stdio.h>
 
 struct module;
 struct function;
 
-#include <stdio.h>
 #include "symbol/symbol.h"
 #include "symbol/symbol_table.h"
 
@@ -20,5 +21,5 @@ void module_add_global(struct module *m, struct symbol *sym, bool extern_);
 
 extern struct module *m;
 
-#endif	//MODULE_H
+#endif // BCC_MODULE_H
 

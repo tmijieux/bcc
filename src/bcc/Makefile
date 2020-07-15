@@ -1,6 +1,6 @@
 LEX=lex
 YACC=bison
-CFLAGS=-Wall -std=gnu99 -I. -I.. -O0 -ggdb -D_GNU_SOURCE
+CFLAGS=-Wall -Wextra -std=gnu99 -I. -I.. -O0 -ggdb -D_GNU_SOURCE
 LDFLAGS=-L. -lutil
 CC=cc
 TARGET=bcc
@@ -9,7 +9,7 @@ SRC_BCC=main.c \
 	option.c \
 
 ifndef NOGC
-CFLAGS+=-Dmalloc=gcmalloc -Dfree=gcfree \
+CFLAGS+= -Dmalloc=gcmalloc -Dfree=gcfree \
 	-Drealloc=gcrealloc -Dcalloc=gccalloc
 LDFLAGS+=-lgc -lutil -L../util
 endif
@@ -22,7 +22,7 @@ OBJ_BCC=$(patsubst %.c,%.o,$(SRC_BCC))
 
 -include $(DEP)
 
-bcc: $(OBJ_BCC) 
+bcc: $(OBJ_BCC)
 	$(CC) $(CFLAGS) -o $@  $(OBJ_BCC) $(LDFLAGS)
 
 %.o: %.c
@@ -35,7 +35,7 @@ grammar.c:grammar.y
 	$(YACC) -d -o $@ --defines=grammar.tab.h $^
 
 scanner.c: scanner.l grammar.c
-	$(LEX) -o $@ $< 
+	$(LEX) -o $@ $<
 
 libutil.a:  util
 	make -C util/
@@ -47,5 +47,5 @@ clean:
 fullclean: clean
 	$(RM) $(TARGET)
 
-edit: 
+edit:
 	emacs -mm *.c *.h *.y *.l &

@@ -1,10 +1,10 @@
+#ifndef BCC_EXPRESSION_H
+#define BCC_EXPRESSION_H
 
-#ifndef EXPRESSION_H
-#define EXPRESSION_H
+#include <stdbool.h>
 
 struct expression;
 
-#include <stdbool.h>
 #include "../module.h"
 #include "../symbol/symbol.h"
 #include "../type/type.h"
@@ -65,7 +65,7 @@ struct expression {
 
 //    bool constant;
     struct constant *constant;
-    
+
     const struct type *target_type;
     const char *identifier;
     struct symbol *symbol;
@@ -88,6 +88,9 @@ bool expr_is_test(const struct expression *e);
 bool expr_is_operation(const struct expression *e);
 
 const struct expression *expr_constant(struct constant *cst);
+const struct expression *expr_constant_from_str(const char *cst);
+
+
 const struct expression *expr_symbol(struct module *m, const char *identifier);
 
 const struct expression *expr_map(const struct expression *fun,
@@ -188,4 +191,4 @@ extern const struct expression *void_expression;
 
 
 
-#endif	//EXPRESSION_H
+#endif // BCC_EXPRESSION_H

@@ -9,17 +9,17 @@
 #include "expression/expression.h"
 #include "statement/statement.h"
 #include "constant/constant.h"
-    
+
 #include "util/error.h"
 #include "util/string2.h"
-    
+
 #include "errorc.h"
 #include "scanner.h"
 #include "parser.tab.h"
 
 
 #define BUFSIZE 1024
-    
+
 static void count(void);
 static void comment(void);
 static int check_type(void);
@@ -96,7 +96,7 @@ IS                      (u|U|l|L)*
 0{D}+{IS}?              {
     count();
     yylval.constant = constant_oct_integer(yytext);
-    return(TOKEN_CONSTANT); 
+    return(TOKEN_CONSTANT);
 // octal integer
     }
 {D}+{IS}?               {
@@ -105,15 +105,15 @@ IS                      (u|U|l|L)*
     return(TOKEN_CONSTANT);
 // decimal integer
    }
-L?'(\\.|[^\\'])+'     { count(); return(TOKEN_CONSTANT); /*char?*/ } 
+L?'(\\.|[^\\'])+'     { count(); return(TOKEN_CONSTANT); /*char?*/ }
 
-{D}+{E}{FS}?            { count(); return(TOKEN_CONSTANT); 
+{D}+{E}{FS}?            { count(); return(TOKEN_CONSTANT);
 // fp with exponent, no dot
 }
-{D}*"."{D}+({E})?{FS}?  { count(); return(TOKEN_CONSTANT); 
+{D}*"."{D}+({E})?{FS}?  { count(); return(TOKEN_CONSTANT);
 // fp with dot
 }
-{D}+"."{D}*({E})?{FS}?  { count(); return(TOKEN_CONSTANT); 
+{D}+"."{D}*({E})?{FS}?  { count(); return(TOKEN_CONSTANT);
 // fp with dot and first part
 }
 
@@ -182,12 +182,12 @@ static void comment(void)
   loop:
     while ((c = input()) != '*' && c != 0)
         /*putchar(c)*/;
-    
+
     if ((c1 = input()) != '/' && c != 0) {
         unput(c1);
         goto loop;
     }
-    
+
     if (c != 0)
         /*putchar(c1)*/;
 }
@@ -203,7 +203,7 @@ const char *old_yytext[YYOLDTEXT_SIZE] = {
 static void count(void)
 {
     int i;
-    
+
     for (i = 0; yytext[i] != '\0'; i++)
         if (yytext[i] == '\n')
             yycolno = 0;
@@ -220,8 +220,8 @@ static void count(void)
 static int check_type(void)
 {
     struct symbol *may_be_typedef = NULL;
-    
- 
+
+
     if (st_search(yytext, &may_be_typedef) == 1) {
         debug("found symbol %s : may be typename", yytext);
         if (symbol_is_typename(may_be_typedef)) {
@@ -239,7 +239,7 @@ static void line_marker(void)
     char line[BUFSIZE];
     char c;
     char *filename = NULL;
-    
+
     int i = 0;
     while ((c = input()) != '\n' && c != 0 && i < BUFSIZE) {
         line[i++] = c;

@@ -1,5 +1,5 @@
-#ifndef EXPR_CODEGEN_H
-#define EXPR_CODEGEN_H
+#ifndef BCC_EXPRESSION_CODEGEN_H
+#define BCC_EXPRESSION_CODEGEN_H
 
 void expr_cg(const struct expression *);
 
@@ -19,4 +19,4 @@ void expr_cg_trunc(struct expression *e);
 void expr_cg_xcrement(struct expression *e);
 void expr_cg_xoperation(struct expression *e);
 
-#endif	//EXPR_CODEGEN_H
+#endif // BCC_EXPRESSION_CODEGEN_H

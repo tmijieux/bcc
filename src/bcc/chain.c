@@ -4,25 +4,28 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <string.h>
+#include <stdio.h>
+
 #include "util/error.h"
+#include "chain.h"
+
 
 #define MAX_ARGS 128
 #define NEVER_REACHED -42
-#define ARRAY_SIZE(x__) (sizeof(x__)/sizeof(*(x__)))
+#define ARRAY_SIZE(X) (sizeof(X)/sizeof(X[0]))
 
-#include <stdio.h>
-#include "chain.h"
+
 
 struct {
     enum c_compil_stage ccs;
     char *extension;
 } stext[] =  {
-    { ccs_preprocessor, "c" },
-    { ccs_compilation, "ll" },
-    { ccs_llvm_opt, "bc" },
-    { ccs_llvm_compilation, "s" },
-    { ccs_assembly, "o" },
-    { ccs_linking, "" },
+    { CCS_PREPROCESSOR, "c" },
+    { CCS_COMPILATION, "ll" },
+    { CCS_LLVM_OPT, "bc" },
+    { CCS_LLVM_COMPILATION, "s" },
+    { CCS_ASSEMBLY, "o" },
+    { CCS_LINKING, "" },
 };
 
 const char *extension_by_stage(unsigned int stage)
@@ -35,7 +38,7 @@ const char *extension_by_stage(unsigned int stage)
 
 int first_stage_by_extension(const char *ext)
 {
-    for (int i = 0; i < ARRAY_SIZE(stext); ++i) {
+    for (unsigned i = 0; i < ARRAY_SIZE(stext); ++i) {
         if (0 == strcmp(stext[i].extension, ext)) {
             return stext[i].ccs;
         }
@@ -44,14 +47,16 @@ int first_stage_by_extension(const char *ext)
     return NEVER_REACHED;
 }
 
-void split_extension(const char *filename__, char *file_extension[2])
+void split_extension(const char *input_filename, char *file_extension[2])
 {
-    int i, s;
-    char *filename = strdup(filename__);
-    
-    s = strlen(filename);
-    for (i = s-1; s >= 0; --i) {
-        if ('.' == filename[i]) {
+    char *filename = strdup(input_filename);
+
+    int s = strlen(filename);
+    int i = s -1;
+    for (; s >= 0; --i)
+    {
+        if ('.' == filename[i])
+        {
             filename[i] = '\0';
             file_extension[0] = filename;
             file_extension[1] = &filename[i+1];
@@ -62,7 +67,7 @@ void split_extension(const char *filename__, char *file_extension[2])
         file_extension[0] = file_extension[1] = filename;
 }
 
-static int exec_program(char * const argv[], int input, int output)
+static int exec_program(char *const argv[], int input, int output)
 {
     int ret = 0;
     pid_t p = fork();
@@ -91,16 +96,17 @@ static int exec_program(char * const argv[], int input, int output)
     return WEXITSTATUS(ret);
 }
 
-static int x_stage(const char *cmd, struct list *arglist,
-                   int input, int output)
+static int run_stage(const char *cmd, struct list *arglist, int input, int output)
 {
-    int si = list_size(arglist), i, ret = 0;
+    int ret = 0;
+    int si = list_size(arglist);
     char **args = calloc(si + 2, sizeof*args);
+    int i = 0;
 
-    i = 0;
     args[i++] = strdup(cmd);
-    for (; i <= si; ++i)
+    for (; i <= si; ++i) {
         args[i] = list_get(arglist, i);
+    }
     args[i] = NULL;
     ret = exec_program(args, input, output);
     args = NULL;
@@ -108,67 +114,73 @@ static int x_stage(const char *cmd, struct list *arglist,
 }
 /* { "opt", "-std-compile-opts", "-mem2reg", NULL }, */
 
-#define prepare_stage(stage_name__)                     \
-    do {                                                \
-        if (ccs_##stage_name__ == bopt->last_stage) {   \
-            debug("last stage is %s\n", #stage_name__); \
-            output = stdout;                            \
-        } else {                                        \
-            output = tmpfile();                         \
-        }                                               \
-    } while (0)                                         \
-        
-#define run_stage(stage_command__, stage_short__)                  \
-    do {                                                           \
-        ret = x_stage(stage_command__, bopt->stage_short__##_arg,  \
-                      fileno(input), fileno(output));              \
-    } while(0)                                                     \
-        
 
-#define end_stage(stage_name__)                                \
-    do {                                                       \
-        if (ret || ccs_##stage_name__ == bopt->last_stage) {   \
-            return ret;                                        \
-        }                                                      \
-    } while(0)                                                 \
-
-
-#define stage(stage_name__, stage_command__, stage_short__)     \
-    do {                                                        \
-        debug("stage: %s reached\n", #stage_name__);            \
-        prepare_stage(stage_name__);                            \
-        run_stage(stage_command__, stage_short__);              \
-        end_stage(stage_name__);                                \
-        fclose(input);                                          \
-        input = output; rewind(input);                          \
-        output = tmpfile();                                     \
-    } while(0)                                                  \
-
-
-int compile_chain(const char *input_name, const struct bcc_option *bopt)
+static int do_stage(const struct bcc_option *options,
+                    enum c_compil_stage stage,
+                    const char *command,
+                    const char *stage_name,
+                    FILE **input_file)
 {
-    int ret = -1;
-    FILE *input, *output;
-    
-    int fstage, lstage;
-    char *file_extension[2], *output_name;
-    const char *ext;
-    
+    FILE *output_file = NULL;
+
+    debug("stage %s reached \n", stage_name);
+    if (stage == options->last_stage) {
+        debug("last stage is %s\n", stage_name);
+        output_file = stdout;
+    } else {
+        output_file = tmpfile();
+    }
+
+    struct list *arg_list = NULL;
+    switch (stage) {
+    case CCS_PREPROCESSOR: arg_list = options->cpp_arg; break;
+    case CCS_COMPILATION: arg_list = options->cc1_arg; break;
+    case CCS_LLVM_OPT: arg_list = options->opt_arg; break;
+    case CCS_LLVM_COMPILATION: arg_list = options->llc_arg; break;
+    case CCS_ASSEMBLY: arg_list = options->gas_arg; break;
+    default: arg_list = NULL; break;
+    }
+
+    // run
+    int ret =  run_stage(command, arg_list,
+                         fileno(*input_file),
+                         fileno(output_file));
+
+    fclose(*input_file);
+    *input_file = output_file;
+    rewind(*input_file);
+    return ret;
+}
+
+
+int compile_chain(const char *input_name, const struct bcc_option *options)
+{
+    /* int fstage; */
+    int lstage = 0;
+    char *file_extension[2] = {NULL,NULL};
+    char *output_name = NULL;
+    const char *ext = 0;
+
     split_extension(input_name, file_extension);
-    fstage = first_stage_by_extension(file_extension[1]);
-    lstage = last_stage_by_option(bopt);
+    /* fstage = first_stage_by_extension(file_extension[1]); */
+    lstage = last_stage_by_option(options);
     ext = extension_by_stage(lstage);
-    asprintf(&output_name, "%s%s%s", basename(file_extension[0]),
-             strlen(ext) > 0 ? "." : "", ext);
 
-    input = fopen(input_name, "r");
+    asprintf(&output_name,
+             "%s%s%s",
+             basename(file_extension[0]),
+             ((strlen(ext) > 0) ? "." : ""),
+             ext);
 
-    stage(preprocessor, "cpp", cpp);
-    stage(compilation, "./cc1", cc1);
-    stage(llvm_opt, "opt", opt);
-    stage(llvm_compilation, "llc", llc);
-    stage(assembly, "as", gas);
-    
-    
+    FILE *input_file = fopen(input_name, "r");
+
+    do_stage(options, CCS_PREPROCESSOR, "cpp", "CCS_PREPROCESSOR", &input_file);
+    do_stage(options, CCS_COMPILATION, "./cc1", "CCS_COMPILATION", &input_file);
+    do_stage(options, CCS_LLVM_OPT, "opt", "CCS_LLVM_OPT", &input_file);
+    do_stage(options, CCS_LLVM_COMPILATION, "llc", "CCS_LLVM_COMPILATION", &input_file);
+    int ret = do_stage(options, CCS_ASSEMBLY, "as", "CCS_ASSEMBLY", &input_file);
+
+    fclose(input_file);
+
     return ret;
 }

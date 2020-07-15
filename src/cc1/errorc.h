@@ -1,5 +1,5 @@
-#ifndef ERROR_COMPILE_H
-#define ERROR_COMPILE_H
+#ifndef BCC_COMPILE_ERROR_H
+#define BCC_COMPILE_ERROR_H
 
 #ifndef ERROR_OUTPUT
 #define ERROR_OUTPUT stderr
@@ -13,4 +13,4 @@ void fatal_error(const char *format, ...);
 
 int yyerror(const char *s);
 
-#endif //ERROR_COMPILE_H
+#endif // BCC_COMPILE_ERROR_H

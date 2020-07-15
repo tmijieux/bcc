@@ -11,7 +11,7 @@
 #include "chain.h"
 #include "util/error.h"
 
-int compile_file(const char *filename, struct bcc_option *bopt);
+int compile_file(const char *filename, struct bcc_option *opt);
 void stat_files(int *argc, char **argv);
 
 int yyparse(void);
@@ -21,33 +21,38 @@ char *yyfilename = NULL;
 
 int main(int argc, char **argv)
 {
-    struct bcc_option bopt = { 0 };
+    struct bcc_option opt = { 0 };
     int err = 0;
 
-    bopt_init(&bopt);
+    opt_init(&opt);
     error_set_program_name(argv[0]);
-    parse_options(&argc, &argv, &bopt);
-    option_check(&bopt, argc-1);
+    parse_options(&argc, &argv, &opt);
+    option_check(&opt, argc-1);
     stat_files(&argc, argv);
 
-    if (1 == argc)
+    if (argc == 1)
+    {
         internal_fatal_error("no input files\ncompilation terminated.\n");
-    
-    int i = 1;
-    while (i < argc) {
+    }
+
+    for (int i = 1; i < argc; ++i)
+    {
         FILE *input = fopen(argv[i], "r");
         if (NULL == input) {
             perror(argv[i]);
             exit(EXIT_FAILURE);
         }
-        
+
         char *mname = strdup(argv[i]);
         yyfilename = mname;
-        err = compile_chain(argv[i], &bopt);
 
+        err = compile_chain(argv[i], &opt);
         if (err)
+        {
             break;
-        i++;
+        }
+
+        ++i;
     }
     return err ? EXIT_FAILURE : EXIT_SUCCESS;
 }

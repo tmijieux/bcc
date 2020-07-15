@@ -1,5 +1,5 @@
-#ifndef EXPRESSION_CHECK_H
-#define EXPRESSION_CHECK_H
+#ifndef BCC_EXPRESSION_CHECK_H
+#define BCC_EXPRESSION_CHECK_H
 
 void expr_ck(const struct expression *);
 
@@ -19,4 +19,4 @@ void expr_ck_trunc(struct expression *e);
 void expr_ck_xcrement(struct expression *e);
 void expr_ck_xoperation(struct expression *e);
 
-#endif //EXPRESSION_CHECK_H
+#endif // BCC_EXPRESSION_CHECK_H

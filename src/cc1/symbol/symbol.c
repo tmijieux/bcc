@@ -8,7 +8,7 @@
 #include "../type/type.h"
 #include "../util/error.h"
 #include "../program.h"
-    
+
 struct symbol *symbol_new(const char *name,
                           enum symbol_type symbol_type,
                           const struct type *type,
@@ -18,20 +18,20 @@ struct symbol *symbol_new(const char *name,
     assert(NULL != type);
 
     sy = calloc(sizeof *sy, 1);
-    
+
     sy->symbol_type = symbol_type;
-    sy->type = type;        
+    sy->type = type;
     sy->name = name;
-    
+
     sy->used = false;
     sy->in_table = false;
     sy->suffix = "input.stack";	// default value
-    
+
     sy->unique_id = prgm_get_unique_id();
     sy->variable.alloc_code = NULL;
     sy->variable.init_code = "";
     /* used to differentiate between generated code and user code   */
-    
+
     return sy;
 }
 
@@ -88,7 +88,7 @@ char *symbol_fully_qualified_name(const struct symbol *sym)
 {
     char *id, *name;
     bool global = symbol_is_global(sym);
-    
+
     asprintf(&id, ".%d", sym->unique_id);
     asprintf(&name, "%s%s.%s%s", global ? "@" : "%",
              sym->name, sym->suffix, global ? "" : id);
