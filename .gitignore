@@ -50,3 +50,6 @@ src/bcc/bcc
 
 #test dir
 test/
+
+#build dir
+build/

@@ -10,8 +10,6 @@ FLEX_TARGET(scanner scanner.l ${CMAKE_CURRENT_BINARY_DIR}/scanner.c)
 
 ADD_FLEX_BISON_DEPENDENCY(scanner parser)
 
-include_directories(".")
-  
 set(
   CC1_SRC
   ${BISON_parser_OUTPUTS}
@@ -42,3 +40,5 @@ set(
 
 add_executable(cc1 ${CC1_SRC})
 target_link_libraries(cc1 util)
+# required because of generated target:
+target_include_directories(cc1 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

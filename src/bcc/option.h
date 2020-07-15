@@ -3,8 +3,8 @@
 
 struct bcc_option;
 
-#include <util/list.h>
-#include "chain.h"
+#include "util/list.h"
+#include "./chain.h"
 
 struct bcc_option {
     char *output;
