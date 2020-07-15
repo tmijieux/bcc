@@ -1,5 +1,5 @@
-#ifndef CC1_TYPE_H
-#define CC1_TYPE_H
+#ifndef BCC_TYPE_H
+#define BCC_TYPE_H
 
 enum type_type {
     TYPE_THIS_IS_NOT_SUPPOSED_TO_BE_THIS_VALUE = 0,
@@ -63,7 +63,7 @@ struct type_function {
 struct type {
     enum type_type type;
     enum type_qualifier qualifier;
-    
+
     union {
 	struct type_array array_type;
 	struct type_function function_type;
@@ -149,21 +149,25 @@ extern const struct type *last_function_return_type;
 void type_init(void);
 
 
-
 #include "pointer.h"
-const struct type *type_get_pointer_type(const struct pointer *ptr,
-                                         const struct type *base_type);
+const struct type *type_get_pointer_type(
+    const struct pointer *ptr,
+    const struct type *base_type
+);
 
-const struct type *
-type_get_array_type(const struct type *type,
-                    const struct expression *const_expr_array_size);
+const struct type *type_get_array_type(
+    const struct type *type,
+    const struct expression *const_expr_array_size
+);
 
-const struct type *
-type_get_array_type_reversed(const struct type *type,
-                             const struct expression *const_expr_array_size);
+const struct type *type_get_array_type_reversed(
+    const struct type *type,
+    const struct expression *const_expr_array_size
+);
 
-const struct type *
-type_get_function_type(const struct type *return_type,
-                       const struct list *type_param_list);
+const struct type *type_get_function_type(
+    const struct type *return_type,
+    const struct list *type_param_list
+);
 
-#endif	// CC1_TYPE_H
+#endif	// BCC_TYPE_H

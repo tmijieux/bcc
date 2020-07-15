@@ -1,8 +1,8 @@
-LEX=lex
+LEX=flex
 YACC=bison
 CFLAGS=-Wall -Wextra -std=gnu99 -I. -I.. -O0 -ggdb -D_GNU_SOURCE
 LDFLAGS=-L. -L../util -lutil
-CC=cc
+CC=gcc
 TARGET=cc1
 SRC_CC1=parser.c \
 	scanner.c \
@@ -44,7 +44,7 @@ OBJ_BCC=$(patsubst %.c,%.o,$(SRC_BCC))
 
 -include $(DEP)
 
-cc1: $(OBJ_CC1) ../util/libutil.a 
+cc1: $(OBJ_CC1) ../util/libutil.a
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.o: %.c
@@ -57,9 +57,9 @@ parser.c:parser.y
 	$(YACC) -d -o $@ --defines=parser.tab.h $^
 
 scanner.c: scanner.l parser.c
-	$(LEX) -o $@ $< 
+	$(LEX) -o $@ $<
 
-../util/libutil.a:  
+../util/libutil.a:
 	make -C ../util/
 
 clean:
@@ -68,5 +68,5 @@ clean:
 fullclean: clean
 	$(RM) $(TARGET)
 
-edit: 
+edit:
 	emacs -mm *.c *.h *.y *.l &

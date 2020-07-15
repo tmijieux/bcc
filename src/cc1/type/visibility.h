@@ -1,1 +1,4 @@
+#ifndef BCC_VISIBILITY_H
+#define BCC_VISIBILITY_H
 
+#endif // BCC_VISIBILITY_H

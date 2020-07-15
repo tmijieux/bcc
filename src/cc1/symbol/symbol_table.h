@@ -5,7 +5,7 @@
 
 // SYMBOL TABLES are hashtables meant to store symbols
 // symbols may refer to:
-// - variables names,
+// - variables names / function names
 // - typedef'd typename
 // - struct names
 // - union names
