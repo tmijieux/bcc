@@ -1,13 +1,16 @@
 #!/bin/bash
 
-pushd $(dirname $0) > /dev/null
-SDIR=$(pwd)
-popd > /dev/null
+CURRENT_DIR=$(pwd)
+FILE_DIR=$(dirname $0)
+cd $FILE_DIR
+FILE_DIR=$(pwd)
+cd $CURRENT_DIR
+
 LLC=llc
 OPT=opt
 CC=gcc
 CFLAGS=-std=gnu99
-UUC=$SDIR/src/cc1/cc1
+UUC=$FILE_DIR/build/src/cc1/cc1
 a=''
 files=()
 
@@ -45,7 +48,6 @@ if [ $# -ge 1 ]; then
 	exit 1
     fi
     exit 0
-
 else
     echo "no input files"
     exit 1

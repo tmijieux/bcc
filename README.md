@@ -8,7 +8,12 @@ a basic c compiler
 
 
 # how to compile
+```
+mkdir -p build
+cd build
+cmake ..
 make
+```
 
 # how to use
 

@@ -87,7 +87,7 @@ static void init_type(const struct type **type_var,
                       enum type_type type_type)
 {
     *type_var = type_new(type_type);
-    ht_add_entry(type_table, type_name, *type_var);
+    ht_add_entry(type_table, type_name, (void*)*type_var);
 }
 
 void type_init(void)
