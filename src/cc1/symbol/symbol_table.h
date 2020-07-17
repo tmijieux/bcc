@@ -28,7 +28,7 @@ int st_add(struct symbol *sy);
 int st_search(const char *name, struct symbol **sy_ret);
 
 void st_pop(void);
-void st_push(void);
+void st_push(const char *name);
 bool st_global_context(void);
 int st_level(void);
 void st_set_parameters(const struct list *l);

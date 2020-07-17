@@ -65,7 +65,8 @@ static struct ht_entry *new_entry(const char *key, void *data)
 
 static void free_entry(struct ht_entry *he)
 {
-    if (he) {
+    if (he)
+    {
 	free(he->key);
 	free(he);
     }
@@ -75,13 +76,22 @@ struct hash_table *ht_create(size_t size, int (*hash) (const char *))
 {
     struct hash_table *ht = (struct hash_table *) malloc(sizeof(*ht));
     if (hash)
+    {
 	ht->hash = hash;
+    }
     else
+    {
 	ht->hash = &default_hash;
-    if (0 == size)
+    }
+
+    if (size == 0)
+    {
 	ht->size = INITIAL_HASH_TABLE_SIZE;
+    }
     else
+    {
 	ht->size = size;
+    }
     ht->buf = calloc(sizeof(*ht->buf), ht->size);
     return ht;
 }
@@ -176,10 +186,13 @@ void ht_free(struct hash_table *ht)
 void ht_for_each(struct hash_table* ht,
 		 void (*fun)(const char *, void*, void*), void *args)
 {
-    if (ht) {
-	for (int i = 0; i < ht->size; ++i) {
+    if (ht)
+    {
+	for (unsigned i = 0; i < ht->size; ++i)
+        {
 	    struct ht_entry *he = ht->buf[i];
-	    while (he) {
+	    while (he)
+            {
 		fun(he->key, he->data, args);
 		he = he->next;
 	    }

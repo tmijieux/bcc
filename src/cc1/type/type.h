@@ -30,6 +30,7 @@ enum type_qualifier {
 };
 
 #include "../expression/expression.h"
+#include "../magic.h"
 
 struct type_array {
     const struct type *values;
@@ -61,6 +62,7 @@ struct type_function {
  *
  */
 struct type {
+    magic_t magic;
     enum type_type type;
     enum type_qualifier qualifier;
 

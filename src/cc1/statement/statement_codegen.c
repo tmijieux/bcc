@@ -1,7 +1,9 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 #include "statement.h"
@@ -12,29 +14,42 @@
 #include "../util/color.h"
 #include "errorc.h"
 
-static const char *str_concat_list(const struct list *l,
-                                   const char *(*get_str__) (void *))
+static char *str_concat_list(const struct list *list,
+                             const char *(*get_str__) (void *))
 {
-    if (!l)
-        return "";
-    int s = list_size(l);
+    if (!list)
+    {
+        return strdup("");
+    }
+
+    unsigned s = list_size(list);
     char *code = "";
-    for (int i = 1; i <= s; ++i)
-        asprintf(&code, "%s%s", code, get_str__(list_get(l, i)));
+    for (unsigned i = 1; i <= s; ++i)
+    {
+        asprintf(&code, "%s%s", code, get_str__(list_get(list, i)));
+    }
+
     return code;
 }
 
-static const char *stmt_get_code(void *st)
+static const char *stmt_get_code(void *input)
 {
-    ((struct statement *) st)->codegen(st);
-    return ((struct statement *) st)->code;
+    struct statement *stmt = input;
+    ASSERT_MAGIC(stmt, MAGIC_STATEMENT);
+
+    stmt->codegen(stmt);
+    return stmt->code;
 }
 
 static const char *symb_get_init_code(void *st)
 {
-    struct symbol *s = st;
-    if (s->variable.is_parameter)
-        return s->variable.init_code;
+    struct symbol *sym = st;
+    ASSERT_MAGIC(sym, MAGIC_SYMBOL);
+
+    if (sym->variable.is_parameter)
+    {
+        return sym->variable.init_code;
+    }
     return "";
 }
 
@@ -48,7 +63,9 @@ const char *decl_init_list(const struct list *l)
 void stmt_cg(const struct statement *st)
 {
     if (error_count() > 0)
+    {
         return;
+    }
     st->codegen((struct statement *) st);
 }
 
@@ -59,11 +76,16 @@ void stmt_cg_expression(struct statement *st)
     st->code = st->expr->vcode;
 }
 
+void stmt_cg_declaration(struct statement *st)
+{
+    char *declaration = str_concat_list(st->symbol_list, &symb_get_init_code);
+    st->code = declaration;
+}
+
 void stmt_cg_compound(struct statement *st)
 {
-    asprintf(&st->code, "%s%s",
-             str_concat_list(st->decl_list, &symb_get_init_code),
-             str_concat_list(st->stmt_list, &stmt_get_code));
+    char *other_statement = str_concat_list(st->stmt_list, &stmt_get_code);
+    st->code = other_statement;
 }
 
 void stmt_cg_if(struct statement *st)

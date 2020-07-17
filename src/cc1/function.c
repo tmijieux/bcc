@@ -40,17 +40,22 @@ int fun_set_body(struct function *fun, const struct statement *compnd)
 
     assert(STMT_COMPOUND == compnd->statement_type);
 
-    if (NULL != compnd->stmt_list) {
+    if (NULL != compnd->stmt_list)
+    {
 	int si = list_size(compnd->stmt_list);
 	struct statement *st = list_get(compnd->stmt_list, si);
-	if (0 == si || st->statement_type != STMT_RETURN) {
-	    if (type_function_return(fun->name_s->type) == type_void) {
+	if (si == 0 || st->statement_type != STMT_RETURN)
+        {
+	    if (type_function_return(fun->name_s->type) == type_void)
+            {
 		// add an implicit return void at end of
 		// void function :
 		struct list *l = list_copy(compnd->stmt_list);
 		list_append(l, stmt_return(void_expression));
-		compnd = stmt_compound(compnd->decl_list, l);
-	    } else {
+		compnd = stmt_compound(l);
+	    }
+            else
+            {
 		// if the function is not void, it MUST
 		// have a return statement
 		error("last statement in function "
@@ -113,7 +118,7 @@ void fun_cg(struct function *fun)
     if (type_function_argc(fun->type) == 1) {
 	// GENERATE VECTORIZED META SUPPPPAAAA CODE
 
-	
+
 	asprintf(&funcode, "define %s @%s.vectorize(%s) {\n"
 		 "start:\n"
 		 "%s"	// all function alloca
@@ -133,26 +138,32 @@ struct symbol *
 function_declare(struct symbol *declarator,
                  const struct list *param_list, struct module *m)
 {
-    assert( type_is_function(declarator->type) );
+    assert(type_is_function(declarator->type));
 
     st_set_parameters(param_list);
     declarator->symbol_type = SYM_FUNCTION;
-    
+
     struct symbol *tmpsy;
-    if ( !st_search(declarator->name, &tmpsy) ) {
+    if (!st_search(declarator->name, &tmpsy))
+    {
 	// first declaration : add to the table
 	st_add(declarator);
-    } else {
-	if ( !type_equal( tmpsy->type, declarator->type ) ) {
+    }
+    else
+    {
+	if (!type_equal(tmpsy->type, declarator->type))
+        {
 	    error("declaration of function '%s' does "
 		  "not match previous declaration\n", declarator->name);
 	}
     }
-    
-    for (int i = 1; i <= list_size(param_list); ++i)
-	assert(((struct symbol*)list_get(param_list,i))
-               ->variable.is_parameter);
-    
+
+    for (unsigned i = 1; i <= list_size(param_list); ++i)
+    {
+        struct symbol *sym = list_get(param_list,i);
+	assert(sym->variable.is_parameter);
+    }
+
     last_function_return_type = type_function_return(declarator->type);
     current_fun = module_get_or_create_function(m, declarator);
     return declarator;

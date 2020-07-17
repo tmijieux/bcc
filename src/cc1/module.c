@@ -28,6 +28,7 @@ struct module {
     struct list *globlist;
 
     const char *name;
+    const char *last_function_name;
 };
 
 struct prototype {
@@ -35,9 +36,8 @@ struct prototype {
     char *code;
 };
 
-struct module *m = NULL;
+struct module *globalModule = NULL;
 
-static int module_add_default_prototype(struct module *m);
 static void check_main_prototype(struct symbol *main);
 
 struct module *module_new(const char *module_name)
@@ -51,7 +51,7 @@ struct module *module_new(const char *module_name)
     m->globlist = list_new(0);
 
     m->name = module_name;
-    module_add_default_prototype(m);
+    m->last_function_name = NULL;
 
     return m;
 }
@@ -60,12 +60,14 @@ struct function *
 module_get_or_create_function(struct module *m, struct symbol *sym)
 {
     struct function *fun;
-    if (ht_get_entry(m->funtable, sym->name, &fun) != 0) {
+    if (ht_get_entry(m->funtable, sym->name, &fun) != 0)
+    {
 	fun = fun_new(sym);
 	ht_add_entry(m->funtable, sym->name, fun);
 	list_append(m->funlist, fun);
 
-        if (!strcmp(sym->name, "main")) {
+        if (!strcmp(sym->name, "main"))
+        {
             check_main_prototype(sym);
         }
     }
@@ -73,20 +75,6 @@ module_get_or_create_function(struct module *m, struct symbol *sym)
     return fun;
 }
 
-static int module_add_default_prototype(struct module *m)
-{
-    struct symbol *param, *fun;
-
-    param = symbol_new("size", SYM_VARIABLE, type_long, STO_AUTO);
-    param->variable.is_parameter = true;
-    const struct list *paramlist = list_new(LI_ELEM, param, NULL);
-    const struct type *ftype = type_get_function_type(type_generic, paramlist);
-    fun = function_declare(symbol_new("GC_malloc", SYM_FUNCTION,
-                                      ftype, STO_EXTERN), paramlist, m);
-    module_add_prototype(m, fun);
-
-    return 0;
-}
 
 void module_print(struct module *m, FILE * out)
 {
@@ -99,15 +87,10 @@ void module_print(struct module *m, FILE * out)
 
     si = list_size(m->protolist);
 //    debug("protolist size: %d\n", si);
-    for (int i = 1; i <= si; ++i) {
-
+    for (int i = 1; i <= si; ++i)
+    {
 	struct prototype *pt = list_get(m->protolist, i);
-	struct function *f = NULL;
-	ht_get_entry(m->funtable, pt->name, &f);
-	if (!f->body_set)
-	    fputs(pt->code, out);
-        /* else
-           debug("code is set: %s\n", pt->name); */
+        fputs(pt->code, out);
     }
 
     fputs("\n;literals\n", out);
@@ -233,8 +216,19 @@ static void check_main_prototype(struct symbol *main)
     }
 }
 
-int module_check(struct module *m)
+int module_check(struct module *mod)
 {
-
+    (void) mod;
     return error_count();
+}
+
+
+void module_set_last_function_name(struct module *module, const char *name)
+{
+    module->last_function_name = name;
+}
+
+const char *module_get_last_function_name(struct module *module)
+{
+    return module->last_function_name;
 }

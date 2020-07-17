@@ -14,17 +14,17 @@
 static struct symbol *stable_get(const char *name)
 {
     struct symbol *sy = NULL;
-    if (!st_search( name, &sy)) {
+    if (!st_search(name, &sy)) {
 	error("undefined reference to %s\n", name);
 	sy = symbol_generic(name);
     }
-
     return sy;
 }
 
 static struct expression *expr_new(enum expression_type ext)
 {
     struct expression *expr = calloc(sizeof(*expr), 1);
+    expr->magic = MAGIC_EXPRESSION;
     expr->expression_type = ext;
     expr->vcode = expr->acode =
         expr->vreg = expr->areg = expr->source_code = "";
@@ -37,13 +37,6 @@ __attribute__((constructor))
 void init_void_expression(void)
 {
     void_expression = expr_new(EXPR_VOID);
-}
-
-bool is_not_zero_constant_expr(const struct expression *expr)
-{
-    if (expr->expression_type == EXPR_CONSTANT)
-        return constant_is_zero(expr->constant);
-    return true;
 }
 
 bool expr_is_test(const struct expression * e)
@@ -78,9 +71,10 @@ static void cast_to_greatest_precision(struct expression *expr)
     }
 }
 
-const struct expression *expr_symbol(struct module *m, const char *identifier)
+const struct expression *expr_symbol(const char *identifier)
 {
     struct expression *expr = expr_new(EXPR_SYMBOL);
+
     expr->codegen = &expr_cg_symbol;
     expr->identifier = identifier;
     expr->symbol = stable_get(expr->identifier);
@@ -89,15 +83,7 @@ const struct expression *expr_symbol(struct module *m, const char *identifier)
     symbol_notice_use(expr->symbol);
     expr->source_code = strdup(identifier);
 
-    if (type_generic == expr->type)
-        return expr;
-
     return expr;
-}
-const struct expression *expr_constant_from_str(const char *constant_str)
-{
-    struct constant *cst = make_constant(constant_str);
-    return expr_constant(cst);
 }
 
 const struct expression *expr_constant(struct constant *cst)
@@ -117,12 +103,17 @@ const struct expression *expr_funcall(const struct expression *fun,
     expr->args = args;
     expr->fun = fun;
 
-    if (!type_is_function(fun->type)) {
+    if (!type_is_function(fun->type))
+    {
         if (type_generic != fun->type) {
             fatal_error("'%s' is not a function.\n", fun->source_code);
         }
 	expr->type = type_generic;
-	return false;
+	return expr;
+    }
+    if (fun->expression_type == EXPR_SYMBOL)
+    {
+        expr->symbol = fun->symbol;
     }
 
     const struct list *proto = type_function_argv(fun->type);
@@ -132,7 +123,7 @@ const struct expression *expr_funcall(const struct expression *fun,
 
     if (list_size(args) != s) {
 	error("%s: illegal number of arguments.\n", fun->source_code);
-        return false;
+        return expr;
     }
 
     for (unsigned int i = 1; i <= s; ++i) {
@@ -142,7 +133,8 @@ const struct expression *expr_funcall(const struct expression *fun,
 	struct expression *tmp2 = list_get(args, i);
 	const struct type *targ = tmp2->type;	// type given
 
-	if (!type_equal(tparg, targ)) {
+	if (!type_equal(tparg, targ))
+        {
 	    error("%s(): argument %d has invalid type.\n"
 		  "expected %s %s %s %s\n", fun->source_code, i,
 		  color("green", type_printable(tparg)),
@@ -592,7 +584,7 @@ const struct expression *expr_sizeof_expr(const struct expression *array)
 
 const struct expression *expr_sizeof_typename(const struct type *type)
 {
-    return expr_generic();
+    return expr_constant(constant_integer_int(type_size(type)));
 }
 
 const struct expression *
@@ -604,8 +596,7 @@ expr_struct_access(const struct expression *struct_,
 
 
 const struct expression *
-expr_struct_deref(const struct expression *struct_,
-                  const char *field_name)
+expr_struct_deref(const struct expression *struct_, const char *field_name)
 {
     return expr_generic();
 }

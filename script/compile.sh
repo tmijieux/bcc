@@ -8,7 +8,7 @@ cd $CURRENT_DIR
 
 LLC=llc
 OPT=opt
-CC=gcc
+GCC=gcc
 CFLAGS=-std=gnu99
 UUC=$FILE_DIR/build/src/cc1/cc1
 a=''
@@ -34,13 +34,13 @@ if [ $# -ge 1 ]; then
 	cpp -C $i > $a.1 || clean_die
 	${UUC} < $a.1 > $a.2 || clean_die
 	${OPT}  -mem2reg $a.2 > $a.3 || clean_die
-	${LLC} > $a.S < $a.3 || clean_die
+	${LLC} --relocation-model=pic > $a.S < $a.3 || clean_die
 	rm $a -f
 	files+=($a.S)
     done
     if [[ ${#files} != "0" ]]; then
 	echo "assemble and link ..."
-	${CC} -o a.out ${files[@]}
+	${GCC} -fPIE -o a.out ${files[@]}
     	# assemble et link les .S
 	clean
     else

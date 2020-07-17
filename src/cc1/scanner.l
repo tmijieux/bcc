@@ -86,38 +86,55 @@ IS                      (u|U|l|L)*
 
 {L}({L}|{D})*           { count(); return(check_type()); } //identifier of type
 
-0[xX]{H}+{IS}?          {
+0[xX]{H}+{IS}?  {
+    // hexadecimal integer
     count();
     yylval.constant = constant_hex_integer(yytext);
     return(TOKEN_CONSTANT);
-    // hexadecimal integer
-        }
 
-0{D}+{IS}?              {
+}
+
+0{D}+{IS}?  {
+    // octal integer
     count();
     yylval.constant = constant_oct_integer(yytext);
     return(TOKEN_CONSTANT);
-// octal integer
-    }
+   }
 {D}+{IS}?               {
+    // decimal integer
     count();
     yylval.constant = constant_dec_integer(yytext);
     return(TOKEN_CONSTANT);
-// decimal integer
    }
-L?'(\\.|[^\\'])+'     { count(); return(TOKEN_CONSTANT); /*char?*/ }
+L?'(\\.|[^\\'])+'     {
+     /*char?*/
+    count();
+    yylval.constant = constant_hex_integer(yytext);
+    return(TOKEN_CONSTANT);
+}
 
-{D}+{E}{FS}?            { count(); return(TOKEN_CONSTANT);
-// fp with exponent, no dot
+{D}+{E}{FS}?            {
+    // floating point with exponent, no dot
+    count();
+    yylval.constant = constant_floating_point(yytext);
+    return(TOKEN_CONSTANT);
+
 }
-{D}*"."{D}+({E})?{FS}?  { count(); return(TOKEN_CONSTANT);
-// fp with dot
+{D}*"."{D}+({E})?{FS}?  {
+    // floating point with dot
+    count();
+    yylval.constant = constant_floating_point(yytext);
+    return(TOKEN_CONSTANT);
 }
-{D}+"."{D}*({E})?{FS}?  { count(); return(TOKEN_CONSTANT);
-// fp with dot and first part
+{D}+"."{D}*({E})?{FS}?  {
+    // floating point with dot and first part
+    count();
+    yylval.constant = constant_floating_point(yytext);
+    return(TOKEN_CONSTANT);
 }
 
 L?\"(\\.|[^\\"])*\"   {
+    // string literal
     count();
     yylval.constant = constant_string_literal(yytext);
     return(TOKEN_CONSTANT);
@@ -189,7 +206,9 @@ static void comment(void)
     }
 
     if (c != 0)
+    {
         /*putchar(c1)*/;
+    }
 }
 
 
@@ -221,11 +240,10 @@ static int check_type(void)
 {
     struct symbol *may_be_typedef = NULL;
 
-
     if (st_search(yytext, &may_be_typedef) == 1) {
-        debug("found symbol %s : may be typename", yytext);
+        /* debug("found symbol %s : may be typename", yytext); */
         if (symbol_is_typename(may_be_typedef)) {
-            debug("success!! symbol %s is typename", yytext);
+            /* debug("success!! symbol %s is typename", yytext); */
             yylval.type = symbol_get_type(may_be_typedef);
             return TOKEN_TYPE_NAME;
         }

@@ -4,9 +4,11 @@
 #include "./list.h"
 #include "./list_node.h"
 #include "./hash_table.h"
+#include "../cc1/magic.h"
 
 struct list
 {
+    magic_t magic;
     struct list_node *front_sentinel;
     struct list_node *last;
     void (*free_element)(void*);
@@ -42,6 +44,7 @@ size_t list_size(const struct list *list)
 struct list *list_new(int flags, ...)
 {
     struct list *list = calloc(sizeof(*list), 1);
+    list->magic = MAGIC_LIST;
     list->front_sentinel = node_new(NULL, SENTINEL_NODE);
     node_set_next(list->front_sentinel, node_new(NULL, SENTINEL_NODE));
     list->flags = flags;
@@ -146,7 +149,7 @@ struct list *list_copy(const struct list *l)
 void *list_to_array(const struct list *l)
 {
     void **array = malloc(sizeof(*array) * l->size);
-    for (int i = 0; i < l->size; ++i)
+    for (unsigned i = 0; i < l->size; ++i)
     {
 	array[i] = list_get(l, i);
     }
@@ -159,7 +162,7 @@ struct hash_table *list_to_hashtable(const struct list *l,
 {
     struct hash_table *ht = ht_create(2 * l->size, NULL);
 
-    for (int i = 0; i < l->size; ++i)
+    for (unsigned i = 0; i < l->size; ++i)
     {
 	void *el = list_get(l, i);
 	ht_add_entry(ht, element_keyname(el), el);
@@ -169,7 +172,14 @@ struct hash_table *list_to_hashtable(const struct list *l,
 
 static void *uncurry(void *arg, void *fun)
 {
-    return ((void *(*)(void*)) fun)(arg);
+    register void* (*func)(void*) = fun;
+    return func(arg);
+}
+
+static void uncurry_noreturn(void *arg, void *fun)
+{
+    register void* (*func)(void*) = fun;
+    func(arg);
 }
 
 struct list *list_map(const struct list *l, void *(*fun)(void*))
@@ -177,19 +187,22 @@ struct list *list_map(const struct list *l, void *(*fun)(void*))
     return list_map_r(l, &uncurry, fun);
 }
 
-void list_each(const struct list *l, void (*fun)(void*))
+void list_each(const struct list *list, void (*fun)(void*))
 {
-    list_each_r(l, (void (*)(void*,void*))&uncurry, fun);
+    list_each_r(list, &uncurry_noreturn, fun);
 }
 
-struct list *list_map_r(const struct list *l,
+struct list *list_map_r(const struct list *input_list,
                         void *(*fun)(void*, void*), void *args)
 {
-    int si = list_size(l);
-    struct list *ret= list_new(0);
-    for (int i = 1; i <= si; ++i)
+    unsigned si = list_size(input_list);
+
+    struct list *ret = list_new(0);
+    for (unsigned i = 1; i <= si; ++i)
     {
-	list_append(ret, fun(list_get(l, i), args));
+        void *oldval = list_get(input_list, i);
+        void *newval = fun(oldval, args);
+	list_append(ret, newval);
     }
     return ret;
 }

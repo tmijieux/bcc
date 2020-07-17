@@ -1,9 +1,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
-#include "declarator.h"
-#include "specifier.h"
+#include <string.h>
+
 #include "../util/error.h"
-#include "errorc.h"
+#include "../magic.h"
+
+#include "./declarator.h"
+#include "./specifier.h"
+#include "./errorc.h"
 
 enum declarator_type {
     DECLARATOR_UNEXPECTED_ERROR = 0,
@@ -18,6 +22,7 @@ enum declarator_type {
 };
 
 struct declarator {
+    magic_t magic;
     enum declarator_type declarator_type;
 
     const struct list *declaration_specifiers;
@@ -40,6 +45,7 @@ static struct declarator *declarator_new(enum declarator_type dt,
                                          struct declarator *next)
 {
     struct declarator *d = calloc(sizeof*d, 1);
+    d->magic = MAGIC_DECLARATOR;
     d->declarator_type = dt;
     d->next = next;
     return d;
@@ -115,7 +121,7 @@ struct declarator*
 declarator_initializer(struct declarator *de,
                        struct initializer *initializer)
 {
-    struct declarator *d = declarator_new(DECLARATOR_SPECIFIER, de);
+    struct declarator *d = declarator_new(DECLARATOR_INITIALIZER, de);
     d->value.initializer = initializer;
     return d;
 }
@@ -139,29 +145,42 @@ struct decl2sym_args {
 static void *to_symbol_add_table__(void *list_elem, void *additional_arg)
 {
     struct declarator *decl = list_elem;
+    ASSERT_MAGIC(decl, MAGIC_DECLARATOR);
+
     struct decl2sym_args *args = additional_arg;
     enum symbol_type st;
 
-    if (STO_TYPEDEF == args->ssto) {
+    if (STO_TYPEDEF == args->ssto)
+    {
         st = SYM_TYPENAME;
-    } else {
-        if (DECLARATOR_ARRAY == decl->declarator_type)
-            st = SYM_ARRAY;
-        else if (DECLARATOR_FUNCTION == decl->declarator_type)
-            st = SYM_FUNCTION;
-        else
-            st = SYM_VARIABLE;
     }
+    else
+    {
+        if (decl->declarator_type == DECLARATOR_ARRAY)
+        {
+            st = SYM_ARRAY;
+        }
+        else if (DECLARATOR_FUNCTION == decl->declarator_type)
+        {
+            st = SYM_FUNCTION;
+        }
+        else
+        {
+            st = SYM_VARIABLE;
+        }
+    }
+    decl->type = declarator_type(decl, args->base_type);
 
     struct symbol *sym;
     sym = symbol_new(
         declarator_get_name(decl),
         st,
-        declarator_type(decl, args->base_type),
+        decl->type,
         args->ssto
     );
 
-    if (!st_add(sym)) {
+    if (!st_add(sym))
+    {
         error("symbol multiple definition: %s \n", sym->name);
     }
     return sym;
@@ -172,21 +191,28 @@ int declarator_process_list(struct list *declaration_specifiers,
                             struct list **ret_list)
 {
     const struct type *base_type;
-    if (check_declaration_specifiers(declaration_specifiers) != 0) {
+    if (check_declaration_specifiers(declaration_specifiers) != 0)
+    {
         base_type = type_generic;
-    } else {
+    }
+    else
+    {
         base_type = specifier_list_get_type(declaration_specifiers);
     }
 
     unsigned s = list_size(declarators);
-    for (unsigned i = 1 ; i <= s; ++i) {
+    for (unsigned i = 1 ; i <= s; ++i)
+    {
         struct declarator *decl = list_get(declarators, i);
         decl->declaration_specifiers = declaration_specifiers;
     }
 
     struct decl2sym_args d2a;
+    memset(&d2a, 0, sizeof d2a);
+
     d2a.base_type = base_type;
     d2a.ssto = specifier_list_get_storage_class(declaration_specifiers);
+
     *ret_list = list_map_r(declarators, &to_symbol_add_table__, &d2a);
     return 0;
 }
@@ -194,6 +220,7 @@ int declarator_process_list(struct list *declaration_specifiers,
 static void *to_symbol_param__(void *list_elem)
 {
     struct declarator *decl = list_elem;
+    ASSERT_MAGIC(decl, MAGIC_DECLARATOR);
 
     assert(DECLARATOR_SPECIFIER == decl->declarator_type);
     struct symbol *sym = symbol_new(declarator_get_name(decl),
@@ -215,51 +242,44 @@ int declarator_process_param_list(struct list *declarator_list,
 const struct type *
 declarator_type(const struct declarator *de, const struct type *base_type)
 {
-    if (NULL == de)
+    if (de == NULL)
+    {
         return base_type;
+    }
 
     switch (de->declarator_type) {
     case DECLARATOR_IDENTIFIER:
         return base_type;
-        break;
-
     case DECLARATOR_ARRAY:
         return declarator_type(
             de->next,
             type_get_array_type_reversed(
                 base_type,
-                de->value.const_expr_array_size));
-        break;
-
+                de->value.const_expr_array_size
+            )
+        );
     case DECLARATOR_POINTER:
         return declarator_type(
             de->next,
             type_get_pointer_type(de->value.pointer, base_type));
-        break;
-
     case DECLARATOR_FUNCTION:
         return declarator_type(
             de->next,
             type_get_function_type(base_type, de->value.parameter_list));
-        break;
-
     case DECLARATOR_FUNCTION_OLD:
         internal_warning("old style function definition "
                          "currently not supported\n");
          return type_generic;
-        break;
-
     case DECLARATOR_SPECIFIER:
         return declarator_type(
             de->next,
             specifier_list_get_type(de->declaration_specifiers));
-        break;
-
+    case DECLARATOR_INITIALIZER:
+        return declarator_type(de->next, base_type);
     default:
         internal_warning("declarator_type: this case is not implemented\n");
         break;
     }
-
     return type_generic;
 }
 

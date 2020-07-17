@@ -19,11 +19,11 @@
 static inline const struct expression *
 to_boolean(const struct expression *cond)
 {
-    if (!expr_is_test(cond)) {
-	const struct expression *zero = expr_constant(constant_integer_int(0));
-	cond = expr_neq(cond, zero);
+    if (!expr_is_test(cond))
+    {
+        const struct expression *zero = expr_constant(constant_integer_int(0));
+        cond = expr_neq(cond, zero);
     }
-
     return cond;
 }
 
@@ -32,6 +32,7 @@ to_boolean(const struct expression *cond)
 static struct statement *stmt_new(enum statement_type st)
 {
     struct statement *stmt = calloc(sizeof *stmt, 1);
+    stmt->magic = MAGIC_STATEMENT;
     stmt->code = "";
     stmt->statement_type = st;
     return stmt;
@@ -50,18 +51,16 @@ struct statement *stmt_expression(const struct expression *expr)
     return stmt;
 }
 
-struct statement *stmt_compound(const struct list *decl,
-				const struct list *stmts)
+struct statement *stmt_compound(const struct list *stmts)
 {
     struct statement *stmt = stmt_new(STMT_COMPOUND);
-    stmt->decl_list = decl;
     stmt->stmt_list = stmts;
     stmt->codegen = &stmt_cg_compound;
     return stmt;
 }
 
 struct statement *stmt_if(const struct expression *cond,
-			  const struct statement *then)
+                          const struct statement *then)
 {
     struct statement *stmt = stmt_new(STMT_IF);
     cond = to_boolean(cond);
@@ -72,8 +71,8 @@ struct statement *stmt_if(const struct expression *cond,
 }
 
 struct statement *stmt_if_else(const struct expression *cond,
-			       const struct statement *then,
-			       const struct statement *eelse)
+                               const struct statement *then,
+                               const struct statement *eelse)
 {
     struct statement *stmt = stmt_new(STMT_IF_ELSE);
     cond = to_boolean(cond);
@@ -85,19 +84,30 @@ struct statement *stmt_if_else(const struct expression *cond,
 }
 
 struct statement *stmt_for(const struct expression *init,
-			   const struct expression *cond,
-			   const struct expression *next,
-			   const struct statement *body)
+                           const struct expression *cond,
+                           const struct expression *next,
+                           const struct statement *body)
 {
-    body = stmt_compound(NULL,
-			 list_new(LI_ELEM, body, stmt_expression(next), NULL));
-    struct list *li = list_new(LI_ELEM, stmt_expression(init),
-			       stmt_while(to_boolean(cond), body), NULL);
-    return stmt_compound(list_new(0), li);
+    struct list *body_stmts = list_new(
+        LI_ELEM,
+        body,
+        stmt_expression(next),
+        NULL
+    );
+
+    struct statement *body_compound = stmt_compound(body_stmts);
+
+    struct list *li = list_new(
+        LI_ELEM,
+        stmt_expression(init),
+        stmt_while(to_boolean(cond), body_compound),
+        NULL
+    );
+    return stmt_compound(li);
 }
 
 struct statement *stmt_while(const struct expression *cond,
-			     const struct statement *body)
+                             const struct statement *body)
 {
     struct statement *stmt = stmt_new(STMT_WHILE);
     cond = to_boolean(cond);
@@ -108,7 +118,7 @@ struct statement *stmt_while(const struct expression *cond,
 }
 
 struct statement *stmt_do_while(const struct expression *cond,
-				const struct statement *body)
+                                const struct statement *body)
 {
     struct statement *stmt = stmt_new(STMT_DO_WHILE);
     cond = to_boolean(cond);
@@ -122,8 +132,8 @@ static struct statement *stmt_return_void(void)
 {
     struct statement *stmt = stmt_new(STMT_RETURN);
     if (last_function_return_type != type_void) {
-	error("return value can't be void. expected %s\n",
-	      color("yellow", type_printable(last_function_return_type)));
+        error("return value can't be void. expected %s\n",
+              color("yellow", type_printable(last_function_return_type)));
     }
     stmt->codegen = &stmt_cg_return_void;
     return stmt;
@@ -137,17 +147,17 @@ struct statement *stmt_return(const struct expression *expr)
     struct statement *stmt = stmt_new(STMT_RETURN);
 
     if (last_function_return_type == type_void) {
-	error("returning non void value\n");
+        error("returning non void value\n");
     } else if (!type_equal(last_function_return_type, expr->type)) {
-	if (type_is_basic(last_function_return_type) &&
-	    type_is_basic(expr->type)) {
-	    warning("return statement makes an implicit cast\n");
-	    expr = expr_cast(expr, last_function_return_type);
-	} else {
-	    error("returning type %s while %s was expected.\n",
-		  color("yellow", type_printable(expr->type)),
-		  color("green", type_printable(last_function_return_type)));
-	}
+        if (type_is_basic(last_function_return_type) &&
+            type_is_basic(expr->type)) {
+            warning("return statement makes an implicit cast\n");
+            expr = expr_cast(expr, last_function_return_type);
+        } else {
+            error("returning type %s while %s was expected.\n",
+                  color("yellow", type_printable(expr->type)),
+                  color("green", type_printable(last_function_return_type)));
+        }
     }
 
     stmt->expr = expr;
@@ -185,6 +195,14 @@ struct statement *stmt_case(struct statement *stmt,
                             const struct expression *const_expr)
 {
     return stmt_void();
+}
+
+struct statement *stmt_declaration(struct list *symbol_list)
+{
+    struct statement *stmt = stmt_new(STMT_DECLARATION);
+    stmt->symbol_list = symbol_list;
+    stmt->codegen = stmt_cg_declaration;
+    return stmt;
 }
 
 struct statement *stmt_default(struct statement *stmt)

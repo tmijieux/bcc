@@ -1,11 +1,19 @@
-#include "enumerator.h"
-
+#include <stdlib.h>
 
 #include "../util/error.h"
+#include "./enumerator.h"
 
-struct enumerator *enumerator_new(const char *name, bool have_value,
-                                  const struct expression *const_expr)
+#include "../errorc.h"
+
+
+struct enumerator *enumerator_new(const char *name, const struct expression *const_expr)
 {
-    internal_warning("enumerator_new not implemented\n");
-    return calloc(sizeof*enumerator_new, 1);
+    struct enumerator *enumerator = calloc(sizeof*enumerator, 1);
+    if (const_expr && const_expr->expression_type != EXPR_CONSTANT)
+    {
+        error("expression must be contant in enum");
+    }
+    enumerator->expr = const_expr;
+    enumerator->identifier = name;
+    return enumerator;
 }

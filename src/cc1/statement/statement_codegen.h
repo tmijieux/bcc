@@ -1,6 +1,7 @@
 #ifndef BCC_STATEMENT_CODEGEN_H
 #define BCC_STATEMENT_CODEGEN_H
 
+void stmt_cg_declaration(struct statement *st);
 void stmt_cg_expression(struct statement *st);
 void stmt_cg_compound(struct statement *st);
 void stmt_cg_if(struct statement *st);

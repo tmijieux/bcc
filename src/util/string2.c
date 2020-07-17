@@ -32,25 +32,43 @@ int asprintf(char **strp, const char *fmt, ...)
     return n;
 }
 
-char *strstrip(const char *str)
+char *strstrip(const char *input_str)
 {
-    char *strip_ = strdup(str);
-    size_t l = strlen(str);
-    if (strip_[l - 1] == '\n')
-	strip_[l - 1] = '\0';
+    char *str = strdup(input_str);
+    size_t len = strlen(str);
+    if (len == 0)
+    {
+        return str;
+    }
 
-    for (int i = 0; i < l - 1; ++i)
-	if (strip_[i] == '\t')
-	    strip_[i] = ' ';
-    return strip_;
+    if (str[len - 1] == '\n')
+    {
+	str[len - 1] = '\0';
+    }
+
+    for (unsigned i = 0; i < len - 1; ++i)
+    {
+	if (str[i] == '\t')
+        {
+	    str[i] = ' ';
+        }
+    }
+    return str;
 }
 
-char *strstrip2(const char *str)
+char *strstrip2(const char *input_str)
 {
-    char *strip_ = strdup(str);
-    size_t l = strlen(str);
-    if (strip_[l - 1] == '"')
-	strip_[l - 1] = '\0';
+    char *str = strdup(input_str);
+    size_t len = strlen(str);
+    if (len == 0)
+    {
+        return str;
+    }
 
-    return strip_;
+    if (str[len - 1] == '"')
+    {
+	str[len - 1] = '\0';
+    }
+
+    return str;
 }

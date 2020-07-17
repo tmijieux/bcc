@@ -11,6 +11,7 @@ void *gcmalloc(size_t size)
 
 void gcfree(void *ptr)
 {
+    (void)ptr;
     /* do nothing */
 }
 

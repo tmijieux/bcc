@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 #include "./function.h"
-#include "./module.h"
 #include "./program.h"
+#include "./module.h"
 #include "./codegen.h"
 #include "./scanner.h"
 
@@ -45,7 +45,7 @@ int check_declaration_specifiers(struct list *declarator_specifiers);
 %expect 1
 
 %token <string> TOKEN_IDENTIFIER
-%token <string> TOKEN_CONSTANT
+%token <constant> TOKEN_CONSTANT
 %token <type> TOKEN_TYPE_NAME
 
 %token TOKEN_PTR_OP TOKEN_INC_OP TOKEN_DEC_OP TOKEN_LEFT_OP TOKEN_RIGHT_OP
@@ -156,8 +156,8 @@ int check_declaration_specifiers(struct list *declarator_specifiers);
 %%
 
 primary_expression
-: TOKEN_IDENTIFIER { $$ = expr_symbol(m, $1); }
-| TOKEN_CONSTANT { $$ = expr_constant_from_str($1); }
+: TOKEN_IDENTIFIER { $$ = expr_symbol($1); }
+| TOKEN_CONSTANT { $$ = expr_constant($1); }
 | '(' expression ')' { $$ = $2; }
 ;
 
@@ -300,6 +300,7 @@ constant_expression
 declaration
 : declaration_specifiers ';' {
     $$ = list_new(0);
+   // FIXME following warning does not work for struct / enums
     warning("declaration does not declare anything\n");
  }
 | declaration_specifiers init_declarator_list ';' {
@@ -398,11 +399,12 @@ enum_specifier
 enumerator_list
 : enumerator { $$ = list_new(LI_ELEM, $1, NULL); }
 | enumerator_list ',' enumerator { list_append($$ = $1, $3); }
+| enumerator_list ',' { $$ = $1; }
 ;
 
 enumerator
-: TOKEN_IDENTIFIER { $$ = enumerator_new($1, false, NULL); }
-| TOKEN_IDENTIFIER '=' constant_expression { $$ = enumerator_new($1, true, $3); }
+: TOKEN_IDENTIFIER { $$ = enumerator_new($1, NULL); }
+| TOKEN_IDENTIFIER '=' constant_expression { $$ = enumerator_new($1, $3); }
 ;
 
 type_qualifier
@@ -441,9 +443,9 @@ type_qualifier_list
 
 parameter_type_list
 : parameter_list { declarator_process_param_list($1, &$$); }
-| parameter_list ',' TOKEN_ELLIPSIS
-{ declarator_process_param_list($1, &$$);
-  internal_warning("param_list ellipsis not handled "); }
+| parameter_list ',' TOKEN_ELLIPSIS {
+  declarator_process_param_list($1, &$$);
+  internal_warning("param_list ellipsis not handled\n"); }
 ;
 
 parameter_list
@@ -516,15 +518,15 @@ labeled_statement
 ;
 
 compound_statement
-: '{' '}' { $$ = stmt_compound(list_new(0), list_new(0)); }
-| left_brace statement_list right_brace { $$ = stmt_compound(list_new(0), $2); }
-| left_brace declaration_list right_brace { $$ = stmt_compound($2, list_new(0)); }
-| left_brace declaration_list statement_list right_brace
-{ $$ = stmt_compound($2, $3); }
+: '{' '}' { $$ = stmt_compound(list_new(0)); }
+| left_brace statement_list right_brace { $$ = stmt_compound($2); }
+/* | left_brace declaration_list right_brace { $$ = stmt_compound($2, list_new(0)); } */
+/* | left_brace declaration_list statement_list right_brace { $$ = stmt_compound($2, $3); } */
+/* | left_brace statement_list right_brace { $$ = stmt_compound(NULL, $2); } */
 ;
 
 left_brace
-: '{' { st_push(); }
+: '{' { st_push(module_get_last_function_name(globalModule)); }
 
 right_brace
 : '}' { st_pop(); }
@@ -536,7 +538,9 @@ declaration_list
 
 statement_list
 : statement { $$ = list_new(LI_ELEM, $1, NULL); }
+| declaration { $$ = list_new(LI_ELEM, stmt_declaration($1), NULL); }
 | statement_list statement { list_append($$ = $1, $2); }
+| statement_list declaration { list_append($$ = $1, stmt_declaration($2)); }
 ;
 
 expression_statement
@@ -578,35 +582,54 @@ external_declaration
 : function_definition
 | declaration { // maybe handle typedef at this level
     int si = list_size($1);
-    for (int i = 1; i <= si; ++i)
-        module_add_global(m, list_get($1, i), false);
+    for (int i = 1; i <= si; ++i) {
+       struct symbol *sym = list_get($1, i);
+
+       // does it depends of  storage class here ?
+       if (sym->type->type == TYPE_FUNCTION)
+       {
+           module_add_prototype(globalModule, sym);
+       }
+       else
+       {
+           module_add_global(globalModule, sym, false);
+       }
+    }
  }
 ;
 
 function_definition
-: function_definition_header compound_statement
-{ $$ = module_get_or_create_function(m, $1);
+: function_definition_header compound_statement {
+    $$ = module_get_or_create_function(globalModule, $1);
     fun_set_body($$, $2);
- }
+}
 ;
 
 function_definition_header
-: declaration_specifiers declarator declaration_list
- { error("old style function declaration not supported"); }
+: declaration_specifiers declarator declaration_list {
+    error("old style function declaration not supported");
+  }
 | declaration_specifiers declarator {
-    struct symbol *sy = symbol_new(
-        declarator_get_name($2), SYM_FUNCTION,
+    struct symbol *sym = symbol_new(
+        declarator_get_name($2),
+        SYM_FUNCTION,
         declarator_type($2, specifier_list_get_type($1)),
-        specifier_list_get_storage_class($1));
-    $$ = function_declare(sy, declarator_deepest_param_list($2), m);  // FIXME
+        specifier_list_get_storage_class($1)
+    );
+    module_set_last_function_name(globalModule, sym->name);
+    $$ = function_declare(sym, declarator_deepest_param_list($2), globalModule);
  }
-| declarator declaration_list
- { error("old style function declaration not supported"); }
+| declarator declaration_list {
+    error("old style function declaration not supported");
+  }
 | declarator {
-    struct symbol *sy = symbol_new(declarator_get_name($1), SYM_FUNCTION,
-                                   declarator_type($1, type_int),
-                                   STO_STATIC);
-    $$ = function_declare(sy, declarator_deepest_param_list($1), m);
+    struct symbol *sy = symbol_new(
+        declarator_get_name($1),
+        SYM_FUNCTION,
+        declarator_type($1, type_int),
+        STO_STATIC
+    );
+    $$ = function_declare(sy, declarator_deepest_param_list($1), globalModule);
 }
 ;
 

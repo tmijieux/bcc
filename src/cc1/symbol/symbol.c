@@ -14,25 +14,24 @@ struct symbol *symbol_new(const char *name,
                           const struct type *type,
                           enum symbol_storage ssto)
 {
-    struct symbol *sy;
-    assert(NULL != type);
+    assert(type != NULL);
+    struct symbol *sym = calloc(sizeof *sym, 1);
+    sym->magic = MAGIC_SYMBOL;
 
-    sy = calloc(sizeof *sy, 1);
+    sym->symbol_type = symbol_type;
+    sym->type = type;
+    sym->name = name;
 
-    sy->symbol_type = symbol_type;
-    sy->type = type;
-    sy->name = name;
+    sym->used = false;
+    sym->in_table = false;
+    sym->suffix = "input.stack";	// default value
 
-    sy->used = false;
-    sy->in_table = false;
-    sy->suffix = "input.stack";	// default value
-
-    sy->unique_id = prgm_get_unique_id();
-    sy->variable.alloc_code = NULL;
-    sy->variable.init_code = "";
+    sym->unique_id = prgm_get_unique_id();
+    sym->variable.alloc_code = NULL;
+    sym->variable.init_code = "";
     /* used to differentiate between generated code and user code   */
 
-    return sy;
+    return sym;
 }
 
 struct symbol *sym_new_function_symbol(const char *name,
@@ -78,7 +77,7 @@ static const char* symbol_type_printable(enum symbol_type st)
 
 void symbol_debug_print(const struct symbol *sy)
 {
-    fprintf(stderr, "Sym: %s : %s : %s\n",
+    fprintf(stderr, "Sym: \t'%s' \t: %s : %s\n",
             sy->name,
             symbol_type_printable(sy->symbol_type),
             type_printable(sy->type));

@@ -5,6 +5,7 @@
 
 struct expression;
 
+#include "../magic.h"
 #include "../module.h"
 #include "../symbol/symbol.h"
 #include "../type/type.h"
@@ -51,6 +52,7 @@ enum expression_type {
 };
 
 struct expression {
+    magic_t magic;
     enum expression_type expression_type;
     const struct type *type;
 
@@ -83,15 +85,12 @@ struct expression {
     // why c++ when you have c
 };
 
-bool is_not_zero_constant_expr(const struct expression *expr);
 bool expr_is_test(const struct expression *e);
 bool expr_is_operation(const struct expression *e);
 
 const struct expression *expr_constant(struct constant *cst);
-const struct expression *expr_constant_from_str(const char *cst);
 
-
-const struct expression *expr_symbol(struct module *m, const char *identifier);
+const struct expression *expr_symbol(const char *identifier);
 
 const struct expression *expr_map(const struct expression *fun,
 				  const struct expression *array);

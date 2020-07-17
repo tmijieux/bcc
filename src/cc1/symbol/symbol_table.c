@@ -21,6 +21,7 @@ struct symbol_table {
     struct hash_table *ht;
     struct symbol_table *next;
     int64_t size;
+    const char *name;
 };
 
 /**
@@ -48,6 +49,7 @@ void st_init(void)
     st->ht = ht_create(0, NULL);
     st->next = NULL;
     st->level = 0;
+    st->name = "__GLOBAL__";
 }
 
 /**
@@ -66,7 +68,7 @@ int st_add(struct symbol *sy)
 
     if (ht_has_entry(st->ht, sy->name))
 	return 0;
-    
+
     if (st->level >= 1) {
 	symb_cg(sy);
 	fun_add_allocas(current_fun, sy);
@@ -74,7 +76,7 @@ int st_add(struct symbol *sy)
 
     ht_add_entry(st->ht, sy->name, sy);
     sy->in_table = true;
-    
+
     return 1;
 }
 
@@ -112,26 +114,40 @@ void st_pop(void)
  * this is used to create a new scope for  local variables in a
  * compound statement
  */
-void st_push(void)
+void st_push(const char *name)
 {
     struct symbol_table *new = calloc(sizeof *new, 1);
     new->ht = ht_create(100, NULL);
-    new->next = st;    
+
+
+    new->next = st;
     new->level = st->level + 1;
     st = new;
 
-    if (st->level == 1)	{ // if we just entered inside a function
+    char *str;
+    if (new->level == 1)
+    {
+        asprintf(&str, "Function %s ()", name);
+        new->name = str;
+    }
+    else if (new->level > 1)
+    {
+        asprintf(&str, "SCOPE inside %s ()", name);
+        new->name = str;
+    }
+
+
+    if (st->level == 1)  // if we just entered inside a function
+    {
 	int s = list_size(function_parameters);
-	for (int i = 1; i <= s; ++i) {
+	for (int i = 1; i <= s; ++i)
+        {
 	    // push the function parameters to the declared symbols
 	    struct symbol *tmp = list_get(function_parameters, i);
-	    if (s == 1) {
-                // OOOHHHH We may want to vectorize this function!!!!!
-		// symbol_prepare_vectorization(tmp);
-	    }
-
 	    if (!st_add(tmp))
-		error("symbol multiple definition: %s \n", tmp->name);
+            {
+		error("symbol multiple definition: '%s'.\n", tmp->name);
+            }
             symb_cg(tmp);
 	}
 	function_parameters = list_new(0); // ... and reset the list
@@ -173,10 +189,9 @@ static void check_variable_use(const struct hash_table *ht)
     for (int i = 1; i <= si; ++i) {
 	struct symbol *sy = list_get(l, i);
 	if (!symbol_used(sy))
-	    warning("unused variable %s\n", sy->name);
+	    warning("unused variable '%s'\n", sy->name);
     }
 }
-
 
 static void symbol_dump__(const char *dontcare__, void *symbol, void *unused__)
 {
@@ -187,9 +202,9 @@ void st_dump(void)
 {
     struct symbol_table *st_ = st;
     fprintf(stderr, "Dump symbol table:\n");
-    while (st_ != NULL) {
-
-        fprintf(stderr, "Level %d\n", st_->level);
+    while (st_ != NULL)
+    {
+        fprintf(stderr, "Level %d [%s]\n", st_->level, st_->name);
         ht_for_each(st_->ht, symbol_dump__, NULL);
         fputs("\n", stderr);
         st_ = st_->next;

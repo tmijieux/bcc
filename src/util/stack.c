@@ -1,11 +1,12 @@
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "./stack.h"
 
 struct stack
 {
-    unsigned int head;
-    unsigned int buffer_size;
+    int64_t head;
+    int64_t buffer_size;
     STACK_TYPE buf[];
 };
 

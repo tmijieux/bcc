@@ -6,7 +6,8 @@ struct symbol;
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "symbol_table.h"
+#include "../magic.h"
+#include "./symbol_table.h"
 #include "../type/type.h"
 
 #define SYM_MAX_SIZE 16
@@ -55,19 +56,16 @@ struct symbol_variable {
     const char *init_code; /* for retrieving parameter value */
 };
 
-struct symbol_function {
-
-};
 
 struct symbol_typename {
     const struct type *type;
 };
 
 struct symbol {
+    magic_t magic;
     enum symbol_type symbol_type;
     union {
 	struct symbol_variable variable;
-	struct symbol_function function;
         struct symbol_typename typename;
     };
     enum symbol_linkage linkage;

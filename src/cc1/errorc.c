@@ -1,21 +1,19 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 
-
 #include "type/type.h"
-
-#include "scanner.h"
-#include "parser.tab.h"
-
 #include "util/error.h"
 #include "util/color.h"
 #include "util/string2.h"
 
+#include "scanner.h"
+#include "parser.tab.h"
 #include "errorc.h"
 
 extern int yycolno, yylineno;
@@ -68,23 +66,29 @@ int yyerror(const char *s)
     errc++;
     fflush(stdout);
     fprintf(ERROR_OUTPUT, "%s:%d:%d: %s\n",
-	    yyfilename, yylineno, yycolno, color("error", s));
-//    len = fprintf(ERROR_OUTPUT, "near ");
-    
-    char *source_code = "";
-    for (int i = old_yytext_index + 1 % YYOLDTEXT_SIZE;
-	 i != old_yytext_index; i = (i + 1) % YYOLDTEXT_SIZE) {
+	    yyfilename,
+            yylineno,
+            yycolno,
+            color("error", s));
+
+    char *source_code = strdup("");
+    for (unsigned i = old_yytext_index + 1 % YYOLDTEXT_SIZE;
+	 i != old_yytext_index;
+         i = (i + 1) % YYOLDTEXT_SIZE   )
+    {
 	asprintf(&source_code, "%s%s", source_code, old_yytext[i]);
     }
     asprintf(&source_code, "%s%s", source_code, yytext);
-    
-    len +=
-	fprintf(ERROR_OUTPUT, "\t%s\n",
-		strstrip(color("green", source_code))) - COLOR_LEN;
+
+    const char *code = strstrip(color("green", source_code));
+    int plen = fprintf(ERROR_OUTPUT, "\t%s\n", code);
+    len += (plen - COLOR_LEN);
 
     char *pointer = "\t";
     for (int i = 0; i < len - 3; ++i)
+    {
 	asprintf(&pointer, "%s ", pointer);
+    }
 
     fputs(color("fushia", pointer), ERROR_OUTPUT);
     fputs(color("fushia", "^\n"), ERROR_OUTPUT);
@@ -94,9 +98,6 @@ int yyerror(const char *s)
     st_dump();
 
     #endif
-
-
-    
     return 0;
 }
 

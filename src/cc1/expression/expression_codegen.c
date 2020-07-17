@@ -11,6 +11,7 @@
 #include "../program.h"
 #include "../codegen.h"
 
+#include "../constant/string_literal.h"
 #include "../symbol/symbol.h"
 #include "../type/type.h"
 #include "../util/error.h"
@@ -161,22 +162,31 @@ void expr_cg_symbol(struct expression *e)
 
 void expr_cg_constant(struct expression *e)
 {
-    e->vreg = new_register();
+
     if (e->type == type_int) {
+        e->vreg = new_register();
         asprintf(&e->vcode, "%s = add i32 %d, 0\n", e->vreg,
                  e->constant->integer.intv.signed_);
     }
     else if (e->type == type_float) {
+        e->vreg = new_register();
         double tmp = (double) e->constant->floatv;
         asprintf(&e->vcode, "%s = fadd float %#018lx, 0.\n",
                  e->vreg, *(uint64_t *) (&tmp));
     } else if (e->type == type_long) {
-
-
+        e->vreg = new_register();
         asprintf(&e->vcode,
                  "%s = add i64 %ld, 0\n",
                  e->vreg,
                  e->constant->integer.longv.signed_);
+    } else if (e->constant->constant_type == CONSTANT_STRING) {
+        e->vreg = new_register();
+        //char *tmp = new_register();
+        asprintf(&e->vcode,
+                 "%s =  bitcast  [%zu x i8]*  %s to i8*\n",
+                 e->vreg,
+                 e->constant->strliteral->length,
+                 e->constant->strliteral->reg);
     }
 }
 

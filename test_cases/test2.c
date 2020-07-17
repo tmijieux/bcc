@@ -1,10 +1,19 @@
 
 struct my_struct {
-    enum some_enum {
-        se_val1,
-        se_val2,
-        se_val3,
-        se_val4
-    };
+    int a;
+    int b;
 };
 
+enum my_enum {
+    VAL1,
+    VAL2 = 4,
+    VAL3,
+};
+
+void printf(const char *fmt, int);
+
+int main()
+{
+    printf("coucou %d\n", 3);
+    return 3;
+}

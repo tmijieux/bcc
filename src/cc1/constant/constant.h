@@ -45,16 +45,16 @@ struct constant {
     double doublev;
 
     char *stringv;
+    struct literal *strliteral;
 
 };
 
-struct constant *make_constant(const char *string);
 struct constant *constant_hex_integer(const char *string);
 struct constant *constant_oct_integer(const char *string);
 struct constant *constant_dec_integer(const char *string);
 struct constant *constant_string_literal(const char *string);
 struct constant *constant_integer_long(long integer);
 struct constant *constant_integer_int(int integer);
-bool constant_is_zero(const struct constant *);
+struct constant *constant_floating_point(const char *string);
 
 #endif // BCC_CONSTANT_H

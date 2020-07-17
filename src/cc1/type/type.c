@@ -128,6 +128,7 @@ size_t type_size(const struct type * t)
 static struct type *type_new(enum type_type et)
 {
     struct type *t = calloc(sizeof *t, 1);
+    t->magic = MAGIC_TYPE;
     t->type = et;
     t->size = type_size(t);
     t->is_vector = false; // the default
@@ -233,46 +234,50 @@ const char *type_printable(const struct type *t)
     char *printable = "type_printable_unimplemented";
 
     switch (t->type) {
-        case TYPE_UNDEF:
-            printable = "undef";
-            break;
-        case TYPE_GENERIC:
-            printable = "generic";
-            break;
-        case TYPE_VOID:
-            printable = "void";
-            break;
-        case TYPE_BOOL:
-            printable = "bool";
-            break;
-        case TYPE_CHAR:
-            printable = "char";
-            break;
+    case TYPE_UNDEF:
+        printable = "undef";
+        break;
+    case TYPE_GENERIC:
+        printable = "generic";
+        break;
+    case TYPE_VOID:
+        printable = "void";
+        break;
+    case TYPE_BOOL:
+        printable = "bool";
+        break;
+    case TYPE_CHAR:
+        printable = "char";
+        break;
 
-        case TYPE_SHORT:
-            printable = "short";
-            break;
-        case TYPE_INT:
-            printable = "int";
-            break;
-        case TYPE_LONG:
-            printable = "long";
-            break;
+    case TYPE_SHORT:
+        printable = "short";
+        break;
+    case TYPE_INT:
+        printable = "int";
+        break;
+    case TYPE_LONG:
+        printable = "long";
+        break;
 
-        case TYPE_FLOAT:
-            printable = "float";
-            break;
-        case TYPE_DOUBLE:
-            printable = "double";
-            break;
+    case TYPE_FLOAT:
+        printable = "float";
+        break;
+    case TYPE_DOUBLE:
+        printable = "double";
+        break;
 
-        case TYPE_ARRAY:
-        case TYPE_FUNCTION:
-        case TYPE_POINTER:
-            return type_printable_aux(t, "");
-            break;
-        default:
-            break;
+    case TYPE_FUNCTION:
+        return type_printable_aux(t, "");
+        break;
+    case TYPE_ARRAY:
+        return type_printable_aux(t, "");
+        break;
+    case TYPE_POINTER:
+        return type_printable_aux(t, "");
+        break;
+    default:
+        break;
     }
     return printable;
 }
@@ -280,27 +285,24 @@ const char *type_printable(const struct type *t)
 const char *type_printable_aux(const struct type *t, char *printable)
 {
     switch (t->type) {
-        case TYPE_ARRAY:
-            asprintf(&printable, "%s[%s]", printable,
-                     str_expression_size(t->array_type.array_size));
-            return type_printable_aux(type_array_values(t), printable);
-            break;
-        case TYPE_FUNCTION:
-            asprintf(&printable, "(%s)(%s)", printable,
-                     type_arglist(t->function_type.argv));
-            return type_printable_aux(type_function_return(t), printable);
-            break;
-        case TYPE_POINTER:
-            asprintf(&printable, "*%s", printable);
-            return type_printable_aux(type_pointer_star(t), printable);
-            break;
-
-        default:
-            asprintf(&printable, "%s %s", type_printable(t), printable);
-            return printable;
-            break;
+    case TYPE_ARRAY:
+        asprintf(&printable, "%s[%s]", printable,
+                 str_expression_size(t->array_type.array_size));
+        return type_printable_aux(type_array_values(t), printable);
+        break;
+    case TYPE_FUNCTION:
+        asprintf(&printable, "(%s)", type_arglist(t->function_type.argv));
+        return type_printable_aux(type_function_return(t), printable);
+        break;
+    case TYPE_POINTER:
+        asprintf(&printable, "*%s", printable);
+        return type_printable_aux(type_pointer_star(t), printable);
+        break;
+    default:
+        asprintf(&printable, "%s%s", type_printable(t), printable);
+        return printable;
+        break;
     }
-
     return printable;
 }
 
